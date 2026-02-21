@@ -23,17 +23,17 @@ export default function Login() {
   return (
     <div className="flex h-screen justify-center items-center">
       <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow w-80">
-        <h2 className="text-xl mb-4">Login</h2>
+        <h2 className="text-xl text-black mb-4">Login</h2>
         <input
           type="email"
           placeholder="Email"
-          className="w-full border p-2 mb-3"
+          className="w-full text-black border p-2 mb-3"
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
-          className="w-full border p-2 mb-3"
+          className="w-full text-black border p-2 mb-3"
           onChange={(e) => setPassword(e.target.value)}
         />
         <button className="bg-green-500 text-white w-full p-2">Login</button>
