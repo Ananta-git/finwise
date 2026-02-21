@@ -56,7 +56,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 min-h-screen bg-gray-100">
       <header className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl text-black font-bold">Dashboard</h1>
         <button onClick={handleLogout} className="bg-red-500 text-white px-3 py-1 rounded">
           Logout
         </button>
