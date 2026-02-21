@@ -44,7 +44,7 @@ export default function AddTransaction() {
         <h2 className="text-xl font-bold mb-4">Add Transaction</h2>
 
         <select
-          className="w-full border p-2 mb-3"
+          className="w-full text-black border p-2 mb-3"
           value={type}
           onChange={(e) => setType(e.target.value as "income" | "expense")}
         >
@@ -55,7 +55,7 @@ export default function AddTransaction() {
         <input
           type="text"
           placeholder="Category"
-          className="w-full border p-2 mb-3"
+          className="w-full text-black border p-2 mb-3"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
@@ -64,7 +64,7 @@ export default function AddTransaction() {
         <input
           type="number"
           placeholder="Amount"
-          className="w-full border p-2 mb-3"
+          className="w-full text-black border p-2 mb-3"
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value))}
           required
@@ -73,12 +73,12 @@ export default function AddTransaction() {
         <input
           type="text"
           placeholder="Note (optional)"
-          className="w-full border p-2 mb-3"
+          className="w-full text-black border p-2 mb-3"
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
 
-        <button className="bg-blue-500 text-white px-4 py-2 rounded">
+        <button className="bg-blue-500  text-white px-4 py-2 rounded">
           Add Transaction
         </button>
       </form>

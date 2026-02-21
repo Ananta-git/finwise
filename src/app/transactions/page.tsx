@@ -48,10 +48,10 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-4 min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">Transactions</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Transactions</h1>
       {transactions.length === 0 && <p>No transactions yet.</p>}
 
-      <ul className="space-y-2">
+      <ul className="space-y-2 text-black">
         {transactions.map((t) => (
           <li
             key={t.id}
@@ -60,7 +60,7 @@ export default function TransactionsPage() {
             <div>
               <p className="font-bold">{t.category} ({t.type})</p>
               <p>${t.amount}</p>
-              {t.note && <p className="text-gray-500">{t.note}</p>}
+              {t.note && <p className="text-black">{t.note}</p>}
             </div>
             <button
               onClick={() => handleDelete(t.id)}

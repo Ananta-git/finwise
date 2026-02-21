@@ -89,11 +89,11 @@ export default function Dashboard() {
         </div>
         <div className="bg-white p-4 rounded shadow">
           <p className="text-gray-500">Balance</p>
-          <p className="text-xl font-bold">${balance}</p>
+          <p className="text-xl text-green-600 font-bold">${balance}</p>
         </div>
       </div>
 
-      <h2 className="text-xl font-bold mb-2">Recent Transactions</h2>
+      <h2 className="text-xl text-black font-bold mb-2">Recent Transactions</h2>
       {transactions.length === 0 && <p>No transactions yet.</p>}
       <ul className="space-y-2">
         {transactions.slice(0, 5).map((t) => (
@@ -101,7 +101,7 @@ export default function Dashboard() {
             key={t.id}
             className="bg-white p-4 rounded shadow flex justify-between items-center"
           >
-            <span>{t.type.toUpperCase()}: ${t.amount}</span>
+            <span className="text-red-600">{t.type.toUpperCase()}: ${t.amount}</span>
           </li>
         ))}
       </ul>
