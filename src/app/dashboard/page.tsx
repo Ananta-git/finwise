@@ -381,3 +381,31 @@ const HeroCard = ({ title, value, color }: any) => {
     </div>
   );
 };
+
+const ChartCard = ({ title, children }: any) => (
+  <div className="bg-white p-6 rounded-2xl shadow-md">
+    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      {title}
+    </h2>
+    {children}
+  </div>
+);
+
+const GoalCard = ({ title, target, current }: any) => {
+  const percentage = Math.min((current / target) * 100, 100);
+
+  return (
+    <div className="mb-6">
+      <div className="flex justify-between text-sm mb-1">
+        <span>{title}</span>
+        <span>${current} / ${target}</span>
+      </div>
+      <div className="w-full bg-gray-200 h-4 rounded-full">
+        <div
+          className="bg-blue-500 h-4 rounded-full"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
+  );
+};
