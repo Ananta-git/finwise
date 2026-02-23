@@ -7,40 +7,41 @@ import { useRouter } from "next/navigation";
 
 export default function AddTransaction() {
   const [type, setType] = useState<"income" | "expense">("expense");
-  const [category, setCategory] = useState("");          // Final category to save
-  const [newCategory, setNewCategory] = useState("");    // For typing new category
+  const [category, setCategory] = useState("");
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState("");
-  const [budgetCategories, setBudgetCategories] = useState<string[]>([]);
-  const [addingNew, setAddingNew] = useState(false);     // Toggle new category input
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isOtherCategory, setIsOtherCategory] = useState(false); // For expense new category
   const router = useRouter();
 
-  // Fetch budget categories
+  // Fetch expense categories from budget
   useEffect(() => {
-    const fetchBudgetCategories = async () => {
-      if (!auth.currentUser) return;
+    const fetchCategories = async () => {
+      if (!auth.currentUser || type === "income") return;
+
       const snapshot = await getDocs(
         collection(db, "users", auth.currentUser.uid, "budgets")
       );
-      const cats = snapshot.docs.map(doc => doc.data().category as string);
-      setBudgetCategories(cats);
+
+      const cats = snapshot.docs.map((doc) => doc.data().category as string);
+      setCategories(cats);
     };
-    fetchBudgetCategories();
-  }, []);
+
+    fetchCategories();
+  }, [type]); // refetch when type changes
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser) return alert("User not logged in");
 
-    const finalCategory = addingNew ? newCategory.trim() : category;
-    if (!finalCategory) return alert("Please select or enter a category");
+    if (!category) return alert("Please enter or select a category");
 
     try {
       await addDoc(
         collection(db, "users", auth.currentUser.uid, "transactions"),
         {
           type,
-          category: finalCategory,
+          category,
           amount,
           note,
           date: serverTimestamp(),
@@ -66,44 +67,63 @@ export default function AddTransaction() {
         <select
           className="w-full text-black border p-2 mb-3 rounded"
           value={type}
-          onChange={(e) => setType(e.target.value as "income" | "expense")}
+          onChange={(e) => {
+            setType(e.target.value as "income" | "expense");
+            setCategory("");
+            setIsOtherCategory(false);
+          }}
         >
           <option value="income">Income</option>
           <option value="expense">Expense</option>
         </select>
 
-        {/* Category Dropdown */}
-        <select
-          className="w-full text-black border p-2 mb-3 rounded"
-          value={addingNew ? "__new__" : category}
-          onChange={(e) => {
-            if (e.target.value === "__new__") {
-              setAddingNew(true);
-              setCategory("");       // Clear previous selection
-            } else {
-              setCategory(e.target.value);
-              setAddingNew(false);
-              setNewCategory("");
-            }
-          }}
-        >
-          <option value="">-- Select Category --</option>
-          {budgetCategories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-          <option value="__new__">Add New Category</option>
-        </select>
-
-        {/* New Category Input */}
-        {addingNew && (
+        {/* Category Input */}
+        {type === "income" ? (
+          // Income → text input
           <input
             type="text"
-            placeholder="Enter new category"
+            placeholder="Source (e.g., Salary)"
             className="w-full text-black border p-2 mb-3 rounded"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
             required
           />
+        ) : (
+          // Expense → dropdown + optional new category
+          <>
+            {!isOtherCategory ? (
+              <select
+                className="w-full text-black border p-2 mb-3 rounded"
+                value={category}
+                onChange={(e) => {
+                  if (e.target.value === "other") {
+                    setIsOtherCategory(true);
+                    setCategory("");
+                  } else {
+                    setCategory(e.target.value);
+                  }
+                }}
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+                <option value="other">Other</option>
+              </select>
+            ) : (
+              <input
+                type="text"
+                placeholder="Enter new category"
+                className="w-full text-black border p-2 mb-3 rounded"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              />
+            )}
+          </>
         )}
 
         {/* Amount */}
