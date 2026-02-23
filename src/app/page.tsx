@@ -1,243 +1,239 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const router = useRouter();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F9FAFB" }}>
-      
-      {/* ================= NAVBAR ================= */}
-      <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          scrolled ? "shadow-md" : ""
-        }`}
-        style={{ backgroundColor: scrolled ? "#FFFFFF" : "transparent" }}
-      >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-center h-16">
-            <Link
-              href="/"
-              className="text-2xl font-bold tracking-tight"
-              style={{ color: "#2563EB" }}
-            >
-              FinWise
-            </Link>
+    <div className="bg-[#F8FBFA] text-gray-800">
 
-            <div className="flex items-center space-x-6 font-medium">
-              <Link href="#features" style={{ color: "#111827" }}>
-                Features
-              </Link>
-              <Link href="/login" style={{ color: "#2563EB" }}>
-                Login
-              </Link>
-              <Link
-                href="/register"
-                className="px-5 py-2 rounded-lg text-white transition"
-                style={{ backgroundColor: "#2563EB" }}
-              >
-                Get Started
-              </Link>
-            </div>
+      {/* ================= NAVBAR ================= */}
+      <nav className="fixed top-0 w-full backdrop-blur-md bg-white/70 border-b border-gray-200 z-50">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+          <Link href="/" className="text-2xl font-bold text-[#0F3D3E] tracking-wide">
+            FinWise
+          </Link>
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a href="#features" className="hover:text-[#0F3D3E] transition">
+              Features
+            </a>
+            <a href="#about" className="hover:text-[#0F3D3E] transition">
+              About
+            </a>
+            <a href="#contact" className="hover:text-[#0F3D3E] transition">
+              Contact
+            </a>
+
+            <button
+              onClick={() => router.push("/login")}
+              className="px-4 py-2 rounded-lg border border-[#0F3D3E] text-[#0F3D3E] hover:bg-[#0F3D3E] hover:text-white transition"
+            >
+              Login
+            </button>
+
+            <button
+              onClick={() => router.push("/register")}
+              className="px-5 py-2 rounded-lg bg-[#F4A261] text-white shadow-md hover:opacity-90 transition"
+            >
+              Register
+            </button>
           </div>
         </div>
       </nav>
 
       {/* ================= HERO ================= */}
-      <section
-        className="pt-32 pb-24 px-6"
-        style={{
-          background:
-            "linear-gradient(to bottom right, #F9FAFB, #FFFFFF)",
-        }}
-      >
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <section className="pt-32 pb-24 px-6">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 items-center gap-12">
           
-          {/* LEFT */}
           <div>
-            <h1
-              className="text-5xl md:text-6xl font-bold leading-tight mb-6"
-              style={{ color: "#111827" }}
-            >
-              Smart Money.
-              <br />
-              <span style={{ color: "#2563EB" }}>
-                Smarter Decisions.
-              </span>
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight text-[#0F3D3E]">
+              Take Control of <br /> Your Financial Future
             </h1>
 
-            <p
-              className="text-xl mb-8"
-              style={{ color: "#6B7280" }}
-            >
-              Track income, control expenses, plan budgets and
-              grow your savings — all inside one powerful dashboard.
+            <p className="mt-6 text-lg text-gray-600 max-w-xl">
+              Track income, manage expenses, set budgets, and visualize your
+              financial growth — all in one beautifully simple app.
             </p>
 
-            <div className="flex space-x-4">
-              <Link
-                href="/register"
-                className="px-8 py-3 rounded-lg text-white font-semibold shadow-lg transition"
-                style={{ backgroundColor: "#2563EB" }}
+            <div className="mt-8 flex gap-4">
+              <button
+                onClick={() => router.push("/register")}
+                className="px-8 py-4 bg-[#0F3D3E] text-white rounded-xl shadow-lg hover:scale-105 transition"
               >
-                Create Free Account
-              </Link>
+                Get Started
+              </button>
 
-              <Link
-                href="/login"
-                className="px-8 py-3 rounded-lg font-semibold border transition"
-                style={{
-                  borderColor: "#2563EB",
-                  color: "#2563EB",
-                }}
+              <button
+                onClick={() => router.push("/login")}
+                className="px-8 py-4 border border-gray-300 rounded-xl hover:bg-gray-100 transition"
               >
                 Login
-              </Link>
-            </div>
-
-            {/* Gold Accent Trust Badge */}
-            <div
-              className="mt-8 inline-block px-4 py-2 rounded-full text-sm font-medium"
-              style={{
-                backgroundColor: "#FEF3C7",
-                color: "#F59E0B",
-              }}
-            >
-              Trusted by 2,000+ users
+              </button>
             </div>
           </div>
 
-          {/* RIGHT DASHBOARD PREVIEW */}
-          <div
-            className="p-8 rounded-2xl shadow-2xl"
-            style={{ backgroundColor: "#FFFFFF" }}
-          >
-            <div className="space-y-6">
-              
-              <div className="flex justify-between items-center">
-                <span
-                  className="font-semibold"
-                  style={{ color: "#111827" }}
-                >
-                  Total Balance
-                </span>
-                <span
-                  className="text-3xl font-bold"
-                  style={{ color: "#16A34A" }}
-                >
-                  $12,345
-                </span>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span style={{ color: "#6B7280" }}>Income</span>
-                  <span style={{ color: "#16A34A" }}>+$5,000</span>
-                </div>
-
-                <div className="flex justify-between text-sm mb-3">
-                  <span style={{ color: "#6B7280" }}>Expenses</span>
-                  <span style={{ color: "#DC2626" }}>-$2,350</span>
-                </div>
-
-                <div
-                  className="w-full h-3 rounded-full"
-                  style={{ backgroundColor: "#F3F4F6" }}
-                >
-                  <div
-                    className="h-3 rounded-full"
-                    style={{
-                      width: "65%",
-                      backgroundColor: "#2563EB",
-                    }}
-                  ></div>
-                </div>
-              </div>
+          {/* Mock Dashboard Preview */}
+          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+            <div className="h-4 w-20 bg-gray-200 rounded mb-6"></div>
+            <div className="h-24 bg-[#E2F3F5] rounded-lg mb-4"></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-20 bg-gray-100 rounded-lg"></div>
+              <div className="h-20 bg-gray-100 rounded-lg"></div>
             </div>
           </div>
+
         </div>
       </section>
 
       {/* ================= FEATURES ================= */}
-      <section
-        id="features"
-        className="py-20 px-6"
-        style={{ backgroundColor: "#F3F4F6" }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <h2
-            className="text-4xl font-bold text-center mb-16"
-            style={{ color: "#111827" }}
-          >
-            Built for Financial Clarity
+      <section id="features" className="py-24 bg-white px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-[#0F3D3E] mb-4">
+            Powerful Yet Simple
           </h2>
+          <p className="text-gray-600 mb-16">
+            Everything you need to manage your personal finances efficiently.
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-10">
             {[
               {
-                title: "Income Tracking",
-                color: "#16A34A",
-                bg: "#DCFCE7",
-                desc: "Monitor all your earnings with precision."
+                title: "Smart Dashboard",
+                desc: "View income, expenses, balance & charts instantly.",
               },
               {
-                title: "Expense Control",
-                color: "#DC2626",
-                bg: "#FEE2E2",
-                desc: "Understand where your money goes."
+                title: "Expense Tracking",
+                desc: "Categorize and manage daily spending easily.",
               },
               {
-                title: "Budget Goals",
-                color: "#F59E0B",
-                bg: "#FEF3C7",
-                desc: "Set smart limits and achieve savings targets."
+                title: "Budget Planning",
+                desc: "Set monthly limits and monitor progress.",
               },
-            ].map((item, i) => (
+              {
+                title: "Transaction History",
+                desc: "Keep a complete log of all financial activities.",
+              },
+              {
+                title: "Visual Reports",
+                desc: "Pie charts and bar graphs for smarter decisions.",
+              },
+              {
+                title: "Cloud Sync",
+                desc: "Securely access your data anytime, anywhere.",
+              },
+            ].map((feature, index) => (
               <div
-                key={i}
-                className="p-8 rounded-2xl shadow-sm transition hover:shadow-lg"
-                style={{ backgroundColor: "#FFFFFF" }}
+                key={index}
+                className="p-8 rounded-2xl bg-[#F8FBFA] hover:shadow-xl transition border border-gray-100"
               >
-                <div
-                  className="w-12 h-12 rounded-lg mb-6"
-                  style={{ backgroundColor: item.bg }}
-                ></div>
-
-                <h3
-                  className="text-xl font-semibold mb-3"
-                  style={{ color: item.color }}
-                >
-                  {item.title}
+                <div className="text-[#F4A261] text-3xl mb-4">●</div>
+                <h3 className="text-xl font-semibold mb-2 text-[#0F3D3E]">
+                  {feature.title}
                 </h3>
-
-                <p style={{ color: "#6B7280" }}>
-                  {item.desc}
-                </p>
+                <p className="text-gray-600 text-sm">{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
-      <footer
-        className="py-10 text-center"
-        style={{ backgroundColor: "#FFFFFF" }}
-      >
-        <p style={{ color: "#9CA3AF" }}>
-          FinWise © 2026 • Built with precision.
+      {/* ================= HOW IT WORKS ================= */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-[#0F3D3E] mb-16">
+            How It Works
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              "Create an Account",
+              "Add Your Income & Expenses",
+              "Track Progress & Improve Savings",
+            ].map((step, i) => (
+              <div key={i} className="relative">
+                <div className="w-16 h-16 mx-auto bg-[#0F3D3E] text-white flex items-center justify-center rounded-full text-xl font-bold mb-6 shadow-lg">
+                  {i + 1}
+                </div>
+                <p className="text-lg text-gray-700">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= TRUST SECTION ================= */}
+      <section id="about" className="py-24 bg-[#0F3D3E] text-white px-6">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-4xl font-bold mb-6">
+              Why Choose FinWise?
+            </h2>
+            <ul className="space-y-4 text-lg">
+              <li>✔ 100% Free</li>
+              <li>✔ Secure Firebase Authentication</li>
+              <li>✔ Cloud-Based Storage</li>
+              <li>✔ Beginner-Friendly Interface</li>
+              <li>✔ No Ads</li>
+              <li>✔ Fast Performance</li>
+            </ul>
+          </div>
+
+          <div className="bg-white text-[#0F3D3E] rounded-2xl p-10 shadow-xl">
+            <h3 className="text-2xl font-bold mb-4">
+              Your Data. Your Control.
+            </h3>
+            <p>
+              Built using modern technologies with privacy and simplicity in
+              mind. Designed to grow with you.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CTA ================= */}
+      <section className="py-24 text-center px-6">
+        <h2 className="text-4xl font-bold text-[#0F3D3E] mb-6">
+          Ready to take control of your money?
+        </h2>
+
+        <button
+          onClick={() => router.push("/register")}
+          className="px-10 py-5 bg-[#F4A261] text-white rounded-2xl shadow-xl text-lg hover:scale-105 transition"
+        >
+          Create Free Account
+        </button>
+
+        <p className="mt-4 text-gray-500 text-sm">
+          No credit card required.
         </p>
+      </section>
+
+      {/* ================= FOOTER ================= */}
+      <footer id="contact" className="bg-white border-t border-gray-200 py-10 px-6">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 text-sm">
+          
+          <div className="text-[#0F3D3E] font-semibold">
+            FinWise © 2026
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <a href="/login" className="hover:text-[#0F3D3E]">Login</a>
+            <a href="/register" className="hover:text-[#0F3D3E]">Register</a>
+            <a href="#features" className="hover:text-[#0F3D3E]">Features</a>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p>Email: support@finwise.app</p>
+            <p>Built with Next.js</p>
+            <p>Powered by Firebase</p>
+          </div>
+
+        </div>
       </footer>
+
     </div>
   );
 }
