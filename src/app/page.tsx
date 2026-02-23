@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import Navbar from "./components/Navbar";
+import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 export default function Home() {
@@ -14,8 +14,8 @@ export default function Home() {
   return (
     <div className="bg-[#F8FBFA] text-gray-800">
 
-    {/* ================= NAVBAR ================= */}
-      <Navbar />
+      {/* ================= NAVBAR ================= */}
+      <Header />
 
       {/* ================= HERO ================= */}
       <section className="pt-32 pb-24 px-6 bg-gradient-to-r from-[#E2F3F5] to-[#F8FBFA]">
@@ -212,7 +212,6 @@ export default function Home() {
 
       {/* ================= FOOTER ================= */}
       <Footer />
-
     </div>
   );
 }
