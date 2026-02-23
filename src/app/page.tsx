@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 export default function Home() {
   const router = useRouter();
@@ -13,93 +15,7 @@ export default function Home() {
     <div className="bg-[#F8FBFA] text-gray-800">
 
     {/* ================= NAVBAR ================= */}
-    <nav className="fixed top-0 w-full backdrop-blur-md bg-white/70 border-b border-gray-200 z-50">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-
-        {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-[#0F3D3E] tracking-wide">
-          FinWise
-        </Link>
-
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <a href="#features" className="hover:text-[#0F3D3E] transition">Features</a>
-          <a href="#about" className="hover:text-[#0F3D3E] transition">About</a>
-          <a href="#contact" className="hover:text-[#0F3D3E] transition">Contact</a>
-
-          <button
-            onClick={() => router.push("/login")}
-            className="px-4 py-2 rounded-lg border border-[#0F3D3E] text-[#0F3D3E] hover:bg-[#0F3D3E] hover:text-white transition"
-          >
-            Login
-          </button>
-
-          <button
-            onClick={() => router.push("/register")}
-            className="px-5 py-2 rounded-lg bg-[#F4A261] text-white shadow-md hover:opacity-90 transition"
-          >
-            Register
-          </button>
-        </div>
-
-        {/* Mobile Hamburger */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="focus:outline-none"
-          >
-            <svg
-              className="w-6 h-6 text-[#0F3D3E]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {menuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-white/95 border-t border-gray-200">
-          <div className="flex flex-col gap-4 px-6 py-4 text-sm font-medium">
-            <a href="#features" className="hover:text-[#0F3D3E] transition">Features</a>
-            <a href="#about" className="hover:text-[#0F3D3E] transition">About</a>
-            <a href="#contact" className="hover:text-[#0F3D3E] transition">Contact</a>
-
-            <button
-              onClick={() => router.push("/login")}
-              className="px-4 py-2 rounded-lg border border-[#0F3D3E] text-[#0F3D3E] hover:bg-[#0F3D3E] hover:text-white transition w-full"
-            >
-              Login
-            </button>
-
-            <button
-              onClick={() => router.push("/register")}
-              className="px-5 py-2 rounded-lg bg-[#F4A261] text-white shadow-md hover:opacity-90 transition w-full"
-            >
-              Register
-            </button>
-          </div>
-        </div>
-      )}
-    </nav>
+      <Navbar />
 
       {/* ================= HERO ================= */}
       <section className="pt-32 pb-24 px-6 bg-gradient-to-r from-[#E2F3F5] to-[#F8FBFA]">
@@ -295,43 +211,7 @@ export default function Home() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer id="contact" className="bg-[#1F2937] text-gray-300 py-12 px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-
-          {/* Branding / Logo */}
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-xl font-bold text-white">FinWise</h3>
-            <p className="text-gray-400 text-sm">
-              © 2026 FinWise. All rights reserved.
-            </p>
-            <p className="text-gray-500 text-sm">
-              Built with Next.js & powered by Firebase
-            </p>
-          </div>
-
-          {/* Quick Links */}
-          <div className="flex flex-col space-y-2">
-            <h4 className="text-white font-semibold mb-2">Quick Links</h4>
-            <a href="/login" className="hover:text-[#F4A261] transition">Login</a>
-            <a href="/register" className="hover:text-[#F4A261] transition">Register</a>
-            <a href="#features" className="hover:text-[#F4A261] transition">Features</a>
-            <a href="#about" className="hover:text-[#F4A261] transition">About</a>
-          </div>
-
-          {/* Contact / Social */}
-          <div className="flex flex-col space-y-2">
-            <h4 className="text-white font-semibold mb-2">Contact</h4>
-            <p>Email: <a href="mailto:anantalawati6@gmail.com.app" className="hover:text-[#F4A261] transition">anantalawati6@gmail.com</a></p>
-            <p>GitHub: <a href="https://github.com/Ananta-git" target="_blank" className="hover:text-[#F4A261] transition">FinWise GitHub</a></p>
-            <p>LinkedIn: <a href="https://linkedin.com" target="_blank" className="hover:text-[#F4A261] transition">FinWise LinkedIn</a></p>
-          </div>
-        </div>
-
-        {/* Bottom Note */}
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          Made with 💌 by Ananta Lawati
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );
