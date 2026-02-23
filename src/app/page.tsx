@@ -45,20 +45,21 @@ export default function Home() {
       </nav>
 
       {/* ================= HERO ================= */}
-      <section className="pt-32 pb-24 px-6">
+      <section className="pt-32 pb-24 px-6 bg-gradient-to-r from-[#E2F3F5] to-[#F8FBFA]">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 items-center gap-12">
-          
-          <div>
+
+          {/* Hero Text */}
+          <div className="text-center md:text-left">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight text-[#0F3D3E]">
               Take Control of <br /> Your Financial Future
             </h1>
 
-            <p className="mt-6 text-lg text-gray-600 max-w-xl">
+            <p className="mt-6 text-lg text-gray-700 max-w-xl">
               Track income, manage expenses, set budgets, and visualize your
               financial growth — all in one beautifully simple app.
             </p>
 
-            <div className="mt-8 flex gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <button
                 onClick={() => router.push("/register")}
                 className="px-8 py-4 bg-[#0F3D3E] text-white rounded-xl shadow-lg hover:scale-105 transition"
@@ -75,13 +76,38 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Mock Dashboard Preview */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+          {/* Dashboard Preview */}
+          <div className="relative bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border border-gray-100 max-w-md mx-auto">
+            
+            {/* Optional Finance Illustration */}
+            <div className="absolute top-4 right-4 opacity-20">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0F3D3E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="12" x2="14" y2="14" />
+              </svg>
+            </div>
+
+            {/* Top Bar */}
             <div className="h-4 w-20 bg-gray-200 rounded mb-6"></div>
-            <div className="h-24 bg-[#E2F3F5] rounded-lg mb-4"></div>
+
+            {/* Balance Box */}
+            <div className="h-24 bg-[#F0FFF4] rounded-lg p-4 flex flex-col justify-between mb-6">
+              <p className="text-gray-600 text-sm">Current Balance</p>
+              <p className="text-2xl font-bold text-[#0F3D3E]">$5,250.00</p>
+            </div>
+
+            {/* Income / Expense Boxes */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="h-20 bg-gray-100 rounded-lg"></div>
-              <div className="h-20 bg-gray-100 rounded-lg"></div>
+              <div className="h-20 bg-[#E6FFFA] rounded-lg p-3 flex flex-col justify-between">
+                <p className="text-green-600 text-sm font-medium">Income</p>
+                <p className="text-green-700 font-bold text-lg">+$3,200</p>
+              </div>
+
+              <div className="h-20 bg-[#FFF5F5] rounded-lg p-3 flex flex-col justify-between">
+                <p className="text-red-600 text-sm font-medium">Expenses</p>
+                <p className="text-red-700 font-bold text-lg">-$1,150</p>
+              </div>
             </div>
           </div>
 
