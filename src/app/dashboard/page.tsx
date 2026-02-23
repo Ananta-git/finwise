@@ -1,9 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import {
   collection,
   getDocs,
@@ -22,6 +22,7 @@ import {
   YAxis,
   CartesianGrid,
   Legend,
+  Cell,
 } from "recharts";
 
 type TransactionType = {
@@ -33,11 +34,12 @@ type TransactionType = {
 
 export default function Dashboard() {
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
-  const [balance, setBalance] = useState(0);
+  const [budgets, setBudgets] = useState<any[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [budgets, setBudgets] = useState<any[]>([]);
+  const [balance, setBalance] = useState(0);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -90,9 +92,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push("/login");
-      } else {
+      if (!user) router.push("/login");
+      else {
         fetchTransactions();
         fetchBudgets();
       }
@@ -101,15 +102,13 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
-  // Expense by category
+  // Expense breakdown
   const expenseByCategory = Object.values(
     transactions
       .filter((t) => t.type === "expense")
       .reduce((acc: any, curr: any) => {
         const category = curr.category || "Other";
-        if (!acc[category]) {
-          acc[category] = { name: category, value: 0 };
-        }
+        if (!acc[category]) acc[category] = { name: category, value: 0 };
         acc[category].value += Number(curr.amount);
         return acc;
       }, {})
@@ -129,222 +128,202 @@ export default function Dashboard() {
       expenseMap[category] += Number(t.amount);
     });
 
-return (
-  <div className="flex min-h-screen bg-gray-100">
+  const totalBudgetLimit = budgets.reduce(
+    (sum, b) => sum + Number(b.monthlyLimit || 0),
+    0
+  );
 
-    {/* SIDEBAR */}
-    <aside className="w-64 bg-white shadow-xl p-6 hidden lg:block">
-      <h2 className="text-2xl font-bold text-blue-600 mb-10 tracking-wide">
-        FinWise
-      </h2>
+  const budgetUsagePercent =
+    totalBudgetLimit > 0
+      ? Math.min((totalExpense / totalBudgetLimit) * 100, 100)
+      : 0;
 
-      <nav className="space-y-5 text-gray-700 font-medium">
-        <button onClick={() => router.push("/dashboard")} className="block hover:text-blue-600">
-          Dashboard
-        </button>
-        <button onClick={() => router.push("/add-transaction")} className="block hover:text-blue-600">
-          Add Transaction
-        </button>
-        <button onClick={() => router.push("/budget")} className="block hover:text-blue-600">
-          Budgets
-        </button>
-        <button onClick={() => router.push("/transactions")} className="block hover:text-blue-600">
-          Reports
-        </button>
-        <button className="block hover:text-blue-600">
-          Goals
-        </button>
-        <button className="block hover:text-blue-600">
-          Settings
-        </button>
-      </nav>
-    </aside>
+  return (
+    <div className="flex min-h-screen bg-gray-100">
 
-    {/* MAIN CONTENT */}
-    <div className="flex-1 flex flex-col">
+      {/* SIDEBAR */}
+      <aside
+        className={`fixed lg:static z-40 top-0 left-0 h-full w-64 bg-white shadow-xl transform ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 lg:translate-x-0`}
+      >
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-blue-600 mb-10">
+            FinWise
+          </h2>
 
-      {/* TOP NAVBAR */}
-      <header className="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Advanced Dashboard
-        </h1>
+          <nav className="space-y-4 text-gray-700 font-medium">
+            <button onClick={() => router.push("/dashboard")} className="block hover:text-blue-600">
+              Dashboard
+            </button>
+            <button onClick={() => router.push("/add-transaction")} className="block hover:text-blue-600">
+              Add Transaction
+            </button>
+            <button onClick={() => router.push("/budget")} className="block hover:text-blue-600">
+              Budgets
+            </button>
+            <button onClick={() => router.push("/transactions")} className="block hover:text-blue-600">
+              Reports
+            </button>
+          </nav>
+        </div>
+      </aside>
 
-        <div className="flex items-center gap-6">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="border px-3 py-1 rounded-lg text-sm focus:outline-none"
-          />
+      {/* MAIN */}
+      <div className="flex-1 flex flex-col">
+
+        {/* TOP NAVBAR */}
+        <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <button
+              className="lg:hidden text-gray-700 text-2xl"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              ☰
+            </button>
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Financial Dashboard
+            </h1>
+          </div>
+
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
           >
             Logout
           </button>
-        </div>
-      </header>
+        </header>
 
-      <main className="p-8 space-y-10">
+        <main className="p-6 space-y-8">
 
-        {/* HERO CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {/* HERO CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
-          <HeroCard title="Total Balance" value={balance} color="blue" />
-          <HeroCard title="Total Income" value={totalIncome} color="green" />
-          <HeroCard title="Total Expense" value={totalExpense} color="red" />
-          <HeroCard title="Active Budgets" value={budgets.length} color="yellow" />
-          <HeroCard
-            title="Budget Usage %"
-            value={
-              budgets.length
-                ? Math.round(
-                    (totalExpense /
-                      budgets.reduce((a, b) => a + Number(b.monthlyLimit), 0)) *
-                      100
-                  )
-                : 0
-            }
-            color="purple"
-          />
-        </div>
+            <HeroCard title="Total Balance" value={`$${balance}`} color="blue" />
+            <HeroCard title="Total Income" value={`$${totalIncome}`} color="green" />
+            <HeroCard title="Total Expense" value={`$${totalExpense}`} color="red" />
+            <HeroCard title="Budget Usage" value={`${Math.round(budgetUsagePercent)}%`} color="purple" />
 
-        {/* CHARTS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          </div>
 
-          {/* PIE */}
-          <ChartCard title="Expense Breakdown">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={expenseByCategory}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={100}
-                  label
-                />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartCard>
+          {/* CHARTS */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* LINE TREND */}
-          <ChartCard title="Income vs Expense Trend">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="amount" />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        </div>
-
-        {/* BUDGET PROGRESS */}
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-lg font-semibold mb-6 text-gray-800">
-            Budget Comparison
-          </h2>
-
-          {budgets.map((budget) => {
-            const spent = expenseMap[budget.category] || 0;
-            const percentage = (spent / budget.monthlyLimit) * 100;
-
-            return (
-              <div key={budget.id} className="mb-5">
-                <div className="flex justify-between text-sm mb-2">
-                  <span>{budget.category}</span>
-                  <span>${spent} / ${budget.monthlyLimit}</span>
-                </div>
-
-                <div className="w-full bg-gray-200 h-4 rounded-full">
-                  <div
-                    className={`h-4 rounded-full ${
-                      percentage > 100
-                        ? "bg-red-500"
-                        : percentage > 80
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
-                    }`}
-                    style={{ width: `${Math.min(percentage, 100)}%` }}
-                  />
-                </div>
-
-                {percentage > 100 && (
-                  <p className="text-red-500 text-xs mt-1">
-                    ⚠ Budget exceeded!
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* GOALS SECTION */}
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-lg font-semibold mb-6 text-gray-800">
-            Savings Goals
-          </h2>
-
-          <GoalCard title="Emergency Fund" target={1000} current={balance} />
-          <GoalCard title="Vacation" target={500} current={balance} />
-        </div>
-
-        {/* RECENT TRANSACTIONS TABLE */}
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">
-            Recent Transactions
-          </h2>
-
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500 border-b">
-                <th className="pb-2">Category</th>
-                <th className="pb-2">Type</th>
-                <th className="pb-2">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.slice(0, 5).map((t) => (
-                <tr key={t.id} className="border-b">
-                  <td className="py-2">{t.category || "Other"}</td>
-                  <td className="py-2">{t.type}</td>
-                  <td
-                    className={`py-2 font-semibold ${
-                      t.type === "income"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
+            <ChartCard title="Expense Breakdown">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={expenseByCategory}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={110}
+                    innerRadius={50}
                   >
-                    ${t.amount}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {expenseByCategory.map((entry, index) => {
+                      const colors = [
+                        "#2563EB",
+                        "#16A34A",
+                        "#DC2626",
+                        "#9333EA",
+                        "#F59E0B",
+                        "#06B6D4",
+                      ];
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={colors[index % colors.length]}
+                        />
+                      );
+                    })}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartCard>
 
-        {/* FOOTER */}
-        <footer className="text-center text-sm text-gray-500 pt-10">
-          FinWise v1.0 • Smart Finance Tracker
-        </footer>
+            <ChartCard title="Income vs Expense">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={barData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="amount" radius={[8, 8, 0, 0]}>
+                    {barData.map((entry, index) => (
+                      <Cell
+                        key={index}
+                        fill={index === 0 ? "#16A34A" : "#DC2626"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
 
-      </main>
+          </div>
+
+          {/* BUDGET PROGRESS */}
+          <div className="bg-white p-6 rounded-2xl shadow-md">
+            <h2 className="text-lg font-semibold mb-6 text-gray-800">
+              Budget Comparison
+            </h2>
+
+            {budgets.map((budget) => {
+              const spent = expenseMap[budget.category] || 0;
+              const percentage = (spent / budget.monthlyLimit) * 100;
+
+              return (
+                <div key={budget.id} className="mb-5">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>{budget.category}</span>
+                    <span>${spent} / ${budget.monthlyLimit}</span>
+                  </div>
+
+                  <div className="w-full bg-gray-200 h-4 rounded-full">
+                    <div
+                      className={`h-4 rounded-full ${
+                        percentage > 100
+                          ? "bg-red-500"
+                          : percentage > 80
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
+                      }`}
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
 }
 
-const HeroCard = ({ title, value, color }: any) => (
-  <div className={`bg-white p-5 rounded-2xl shadow-md border-l-4 border-${color}-500`}>
-    <p className="text-sm text-gray-500">{title}</p>
-    <p className={`text-2xl font-bold text-${color}-600 mt-2`}>
-      {value}
-    </p>
-  </div>
-);
+/* -------------------- COMPONENTS -------------------- */
+
+const colorStyles: any = {
+  blue: { border: "border-blue-500", text: "text-blue-600" },
+  green: { border: "border-green-500", text: "text-green-600" },
+  red: { border: "border-red-500", text: "text-red-600" },
+  purple: { border: "border-purple-500", text: "text-purple-600" },
+};
+
+const HeroCard = ({ title, value, color }: any) => {
+  const style = colorStyles[color] || colorStyles.blue;
+
+  return (
+    <div className={`bg-white p-6 rounded-2xl shadow-md border-l-4 ${style.border}`}>
+      <p className="text-sm text-gray-500">{title}</p>
+      <p className={`text-3xl font-bold mt-3 ${style.text}`}>
+        {value}
+      </p>
+    </div>
+  );
+};
 
 const ChartCard = ({ title, children }: any) => (
   <div className="bg-white p-6 rounded-2xl shadow-md">
@@ -354,22 +333,3 @@ const ChartCard = ({ title, children }: any) => (
     {children}
   </div>
 );
-
-const GoalCard = ({ title, target, current }: any) => {
-  const percentage = Math.min((current / target) * 100, 100);
-
-  return (
-    <div className="mb-6">
-      <div className="flex justify-between text-sm mb-1">
-        <span>{title}</span>
-        <span>${current} / ${target}</span>
-      </div>
-      <div className="w-full bg-gray-200 h-4 rounded-full">
-        <div
-          className="bg-blue-500 h-4 rounded-full"
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-    </div>
-  );
-};
