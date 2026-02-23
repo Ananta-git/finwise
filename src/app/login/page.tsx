@@ -61,7 +61,7 @@ export default function LoginPage() {
 
           {/* Right Form Card */}
           <div className="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-[#0F3D3E] mb-2">Welcome Back 👋</h2>
+            <h2 className="text-2xl font-bold text-[#0F3D3E] mb-2">Welcome Back</h2>
             <p className="text-gray-600 mb-6">Login to your account</p>
 
             <form className="flex flex-col gap-4" onSubmit={handleLogin}>
@@ -70,7 +70,7 @@ export default function LoginPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
+                className="w-full px-4 py-3 border text-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
                 required
               />
               <input
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
+                className="w-full px-4 py-3 border text-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
                 required
               />
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            <p className="mt-6 text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+            <p className="mt-6 text-xs text-gray-600 text-center flex items-center justify-center gap-1">
               🔒 Secured with Firebase Authentication
             </p>
           </div>

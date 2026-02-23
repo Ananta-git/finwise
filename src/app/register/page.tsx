@@ -77,7 +77,7 @@ export default function RegisterPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
+                className="w-full px-4 py-3 border text-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
                 required
               />
               <input
@@ -85,7 +85,7 @@ export default function RegisterPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
+                className="w-full px-4 py-3 border text-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
                 required
               />
               <input
@@ -93,7 +93,7 @@ export default function RegisterPage() {
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
+                className="w-full px-4 py-3 border text-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F4A261] transition"
                 required
               />
 
@@ -115,7 +115,7 @@ export default function RegisterPage() {
               </Link>
             </p>
 
-            <p className="mt-6 text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+            <p className="mt-6 text-xs text-gray-600 text-center flex items-center justify-center gap-1">
               🔒 Secured with Firebase Authentication
             </p>
           </div>
