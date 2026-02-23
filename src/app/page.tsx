@@ -321,15 +321,15 @@ export default function Home() {
           {/* Contact / Social */}
           <div className="flex flex-col space-y-2">
             <h4 className="text-white font-semibold mb-2">Contact</h4>
-            <p>Email: <a href="mailto:support@finwise.app" className="hover:text-[#F4A261] transition">support@finwise.app</a></p>
-            <p>GitHub: <a href="https://github.com/yourrepo" target="_blank" className="hover:text-[#F4A261] transition">FinWise GitHub</a></p>
+            <p>Email: <a href="mailto:anantalawati6@gmail.com.app" className="hover:text-[#F4A261] transition">anantalawati6@gmail.com</a></p>
+            <p>GitHub: <a href="https://github.com/Ananta-git" target="_blank" className="hover:text-[#F4A261] transition">FinWise GitHub</a></p>
             <p>LinkedIn: <a href="https://linkedin.com" target="_blank" className="hover:text-[#F4A261] transition">FinWise LinkedIn</a></p>
           </div>
         </div>
 
         {/* Bottom Note */}
         <div className="mt-8 text-center text-gray-500 text-sm">
-          Made with ❤️ by FinWise Team
+          Made with 💌 by Ananta Lawati
         </div>
       </footer>
 
