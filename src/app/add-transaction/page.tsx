@@ -7,39 +7,40 @@ import { useRouter } from "next/navigation";
 
 export default function AddTransaction() {
   const [type, setType] = useState<"income" | "expense">("expense");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("");          // Final category to save
+  const [newCategory, setNewCategory] = useState("");    // For typing new category
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState("");
   const [budgetCategories, setBudgetCategories] = useState<string[]>([]);
+  const [addingNew, setAddingNew] = useState(false);     // Toggle new category input
   const router = useRouter();
 
-  // Fetch budget categories from Firestore
+  // Fetch budget categories
   useEffect(() => {
     const fetchBudgetCategories = async () => {
       if (!auth.currentUser) return;
-
       const snapshot = await getDocs(
         collection(db, "users", auth.currentUser.uid, "budgets")
       );
-
       const cats = snapshot.docs.map(doc => doc.data().category as string);
       setBudgetCategories(cats);
     };
-
     fetchBudgetCategories();
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser) return alert("User not logged in");
-    if (!category) return alert("Please select or enter a category");
+
+    const finalCategory = addingNew ? newCategory.trim() : category;
+    if (!finalCategory) return alert("Please select or enter a category");
 
     try {
       await addDoc(
         collection(db, "users", auth.currentUser.uid, "transactions"),
         {
           type,
-          category,
+          category: finalCategory,
           amount,
           note,
           date: serverTimestamp(),
@@ -71,27 +72,36 @@ export default function AddTransaction() {
           <option value="expense">Expense</option>
         </select>
 
-        {/* Category Dropdown + New Category Input */}
+        {/* Category Dropdown */}
         <select
           className="w-full text-black border p-2 mb-3 rounded"
-          value={category.startsWith("__new__") ? "__new__" : category}
-          onChange={(e) => setCategory(e.target.value)}
+          value={addingNew ? "__new__" : category}
+          onChange={(e) => {
+            if (e.target.value === "__new__") {
+              setAddingNew(true);
+              setCategory("");       // Clear previous selection
+            } else {
+              setCategory(e.target.value);
+              setAddingNew(false);
+              setNewCategory("");
+            }
+          }}
         >
           <option value="">-- Select Category --</option>
           {budgetCategories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
+            <option key={cat} value={cat}>{cat}</option>
           ))}
           <option value="__new__">Add New Category</option>
         </select>
 
-        {category === "__new__" && (
+        {/* New Category Input */}
+        {addingNew && (
           <input
             type="text"
             placeholder="Enter new category"
             className="w-full text-black border p-2 mb-3 rounded"
-            onChange={(e) => setCategory(e.target.value)}
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
             required
           />
         )}
