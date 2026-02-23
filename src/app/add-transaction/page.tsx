@@ -10,29 +10,29 @@ export default function AddTransaction() {
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState("");
-  const [categories, setCategories] = useState<string[]>([]); // 🔹
+  const [budgetCategories, setBudgetCategories] = useState<string[]>([]);
   const router = useRouter();
 
-  // 🔹 Fetch categories from budget collection
+  // Fetch budget categories from Firestore
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchBudgetCategories = async () => {
       if (!auth.currentUser) return;
 
       const snapshot = await getDocs(
         collection(db, "users", auth.currentUser.uid, "budgets")
       );
 
-      const cats = snapshot.docs.map(doc => doc.data().category);
-      setCategories(cats);
+      const cats = snapshot.docs.map(doc => doc.data().category as string);
+      setBudgetCategories(cats);
     };
 
-    fetchCategories();
+    fetchBudgetCategories();
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser) return alert("User not logged in");
-    if (!category) return alert("Please select a category");
+    if (!category) return alert("Please select or enter a category");
 
     try {
       await addDoc(
@@ -71,27 +71,26 @@ export default function AddTransaction() {
           <option value="expense">Expense</option>
         </select>
 
-        {/* Category Dropdown */}
-        {categories.length > 0 ? (
-          <select
-            className="w-full text-black border p-2 mb-3 rounded"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-          >
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        ) : (
+        {/* Category Dropdown + New Category Input */}
+        <select
+          className="w-full text-black border p-2 mb-3 rounded"
+          value={category.startsWith("__new__") ? "__new__" : category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">-- Select Category --</option>
+          {budgetCategories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+          <option value="__new__">Add New Category</option>
+        </select>
+
+        {category === "__new__" && (
           <input
             type="text"
-            placeholder="Category (No budgets yet)"
+            placeholder="Enter new category"
             className="w-full text-black border p-2 mb-3 rounded"
-            value={category}
             onChange={(e) => setCategory(e.target.value)}
             required
           />
