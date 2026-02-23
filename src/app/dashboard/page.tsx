@@ -1,13 +1,9 @@
 "use client";
 
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
-
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
   getDocs,
@@ -105,17 +101,15 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
-  // Expense by Category
+  // Expense by category
   const expenseByCategory = Object.values(
     transactions
       .filter((t) => t.type === "expense")
       .reduce((acc: any, curr: any) => {
         const category = curr.category || "Other";
-
         if (!acc[category]) {
           acc[category] = { name: category, value: 0 };
         }
-
         acc[category].value += Number(curr.amount);
         return acc;
       }, {})
@@ -136,78 +130,85 @@ export default function Dashboard() {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+    <div className="flex min-h-screen bg-gray-50">
+      
+      {/* SIDEBAR */}
+      <aside className="w-64 bg-white shadow-xl p-6 hidden md:block">
+        <h2 className="text-2xl font-bold text-blue-600 mb-10">
+          FinWise
+        </h2>
 
-      <main className="flex-1 px-6 md:px-10 py-8 space-y-10">
+        <nav className="space-y-4 text-gray-700 font-medium">
+          <button onClick={() => router.push("/dashboard")} className="block hover:text-blue-600">
+            Dashboard
+          </button>
+          <button onClick={() => router.push("/add-transaction")} className="block hover:text-blue-600">
+            Add Transaction
+          </button>
+          <button onClick={() => router.push("/budget")} className="block hover:text-blue-600">
+            Budgets
+          </button>
+          <button onClick={() => router.push("/transactions")} className="block hover:text-blue-600">
+            Transactions
+          </button>
+        </nav>
+      </aside>
 
-        {/* Page Title */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-black">Financial Overview</h1>
-            <p className="text-gray-700 mt-1">
-              Track your income, expenses and budget performance.
-            </p>
-          </div>
+      {/* MAIN CONTENT */}
+      <main className="flex-1 p-8 space-y-8">
 
-          <div className="flex gap-3 flex-wrap">
-            <button
-              onClick={() => router.push("/add-transaction")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow"
-            >
-              Add Transaction
-            </button>
-
-            <button
-              onClick={() => router.push("/budget")}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg shadow"
-            >
-              Set Budget
-            </button>
-          </div>
+        {/* TOP BAR */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Financial Overview
+          </h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow"
+          >
+            Logout
+          </button>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
-          <div className="bg-white p-6 rounded-2xl shadow-md border">
-            <p className="text-black font-medium">Total Balance</p>
-            <p className="text-3xl font-bold text-blue-600 mt-2">
+        {/* HERO CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          
+          <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-blue-500">
+            <p className="text-sm text-gray-500">Total Balance</p>
+            <p className="text-2xl font-bold text-blue-600 mt-2">
               ${balance}
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-md border">
-            <p className="text-black font-medium">Total Income</p>
-            <p className="text-3xl font-bold text-green-600 mt-2">
+          <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-green-500">
+            <p className="text-sm text-gray-500">Total Income</p>
+            <p className="text-2xl font-bold text-green-600 mt-2">
               ${totalIncome}
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-md border">
-            <p className="text-black font-medium">Total Expenses</p>
-            <p className="text-3xl font-bold text-red-600 mt-2">
+          <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-red-500">
+            <p className="text-sm text-gray-500">Total Expense</p>
+            <p className="text-2xl font-bold text-red-600 mt-2">
               ${totalExpense}
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-md border">
-            <p className="text-black font-medium">Transactions</p>
-            <p className="text-3xl font-bold text-black mt-2">
-              {transactions.length}
+          <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-yellow-500">
+            <p className="text-sm text-gray-500">Active Budgets</p>
+            <p className="text-2xl font-bold text-yellow-600 mt-2">
+              {budgets.length}
             </p>
           </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid gap-8 lg:grid-cols-2">
+        {/* CHARTS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* Expense Pie */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border">
-            <h2 className="text-xl font-bold text-black mb-4">
+          <div className="bg-white p-6 rounded-2xl shadow-md">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Expense Breakdown
             </h2>
-
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -222,17 +223,15 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Income vs Expense */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border">
-            <h2 className="text-xl font-bold text-black mb-4">
+          <div className="bg-white p-6 rounded-2xl shadow-md">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Income vs Expense
             </h2>
-
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={barData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" stroke="#000" />
-                <YAxis stroke="#000" />
+                <XAxis dataKey="name" />
+                <YAxis />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="amount" />
@@ -241,14 +240,14 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Budget Progress */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border">
-          <h2 className="text-xl font-bold text-black mb-6">
+        {/* BUDGET PROGRESS */}
+        <div className="bg-white p-6 rounded-2xl shadow-md">
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">
             Budget Progress
           </h2>
 
           {budgets.length === 0 && (
-            <p className="text-black">No budgets set yet.</p>
+            <p className="text-gray-600">No budgets set yet.</p>
           )}
 
           {budgets.map((budget) => {
@@ -257,11 +256,11 @@ export default function Dashboard() {
 
             return (
               <div key={budget.id} className="mb-6">
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-black">
+                <div className="flex justify-between mb-2 text-sm">
+                  <span className="font-medium text-gray-700">
                     {budget.category}
                   </span>
-                  <span className="font-medium text-black">
+                  <span>
                     ${spent} / ${budget.monthlyLimit}
                   </span>
                 </div>
@@ -269,59 +268,53 @@ export default function Dashboard() {
                 <div className="w-full bg-gray-200 h-4 rounded-full">
                   <div
                     className={`h-4 rounded-full transition-all duration-500 ${
-                      percentage > 100 ? "bg-red-600" : "bg-green-600"
+                      percentage > 100
+                        ? "bg-red-500"
+                        : percentage > 80
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
                     }`}
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
-
-                {percentage > 100 && (
-                  <p className="text-red-600 text-sm mt-1 font-medium">
-                    Budget exceeded
-                  </p>
-                )}
               </div>
             );
           })}
         </div>
 
-        {/* Recent Transactions */}
-        <div>
-          <h2 className="text-xl font-bold text-black mb-4">
+        {/* RECENT TRANSACTIONS */}
+        <div className="bg-white p-6 rounded-2xl shadow-md">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Recent Transactions
           </h2>
 
           {transactions.length === 0 && (
-            <p className="text-black">No transactions yet.</p>
+            <p className="text-gray-600">No transactions yet.</p>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {transactions.slice(0, 5).map((t) => (
               <div
                 key={t.id}
-                className="bg-white p-5 rounded-2xl shadow-md border flex justify-between items-center"
+                className="flex justify-between items-center border-b pb-2"
               >
-                <span className="font-semibold text-black">
+                <span className="text-gray-700">
                   {t.category || "Other"}
                 </span>
-
                 <span
-                  className={`text-lg font-bold ${
+                  className={`font-semibold ${
                     t.type === "income"
                       ? "text-green-600"
                       : "text-red-600"
                   }`}
                 >
-                  {t.type === "income" ? "+" : "-"} ${t.amount}
+                  {t.type === "income" ? "+" : "-"}${t.amount}
                 </span>
               </div>
             ))}
           </div>
         </div>
-
       </main>
-
-      <Footer />
     </div>
   );
 }
