@@ -194,7 +194,7 @@ transactions
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Pie Chart */}
         <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-bold mb-4">Expense Breakdown</h2>
+          <h2 className="text-lg text-black font-bold mb-4">Expense Breakdown</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -211,7 +211,7 @@ transactions
 
         {/* Bar Chart */}
         <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-bold mb-4">Income vs Expense</h2>
+          <h2 className="text-lg text-black font-bold mb-4">Income vs Expense</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -227,10 +227,10 @@ transactions
 
       {/* Budget Progress Section */}
       <div className="bg-white p-6 rounded-xl shadow">
-        <h2 className="text-xl font-bold mb-4">Budget Progress</h2>
+        <h2 className="text-xl text-black font-bold mb-4">Budget Progress</h2>
 
         {budgets.length === 0 && (
-          <p className="text-gray-500">No budgets set yet.</p>
+          <p className="text-black">No budgets set yet.</p>
         )}
 
         {budgets.map((budget) => {
@@ -240,13 +240,13 @@ transactions
           return (
             <div key={budget.id} className="mb-5">
               <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium">{budget.category}</span>
+                <span className="font-medium text-black">{budget.category}</span>
                 <span>
                   ${spent} / ${budget.monthlyLimit}
                 </span>
               </div>
 
-              <div className="w-full bg-gray-200 h-4 rounded">
+              <div className="w-full bg-gray-500 h-4 rounded">
                 <div
                   className={`h-4 rounded transition-all duration-500 ${
                     percentage > 100 ? "bg-red-500" : "bg-green-500"
