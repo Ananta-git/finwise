@@ -4,6 +4,7 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
   getDocs,
@@ -37,6 +38,7 @@ export default function Dashboard() {
   const [balance, setBalance] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [budgets, setBudgets] = useState<any[]>([]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -72,9 +74,33 @@ export default function Dashboard() {
     setBalance(income - expense);
   };
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  const fetchBudgets = async () => {
+  if (!auth.currentUser) return;
+
+  const snapshot = await getDocs(
+    collection(db, "users", auth.currentUser.uid, "budgets")
+  );
+
+  const data = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  setBudgets(data);
+};
+
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      router.push("/login");
+    } else {
+      fetchTransactions();
+      fetchBudgets();
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 
   // 🔹 Pie Chart Data (Expenses by category)
   const expenseByCategory = Object.values(
@@ -98,6 +124,17 @@ export default function Dashboard() {
     { name: "Expense", amount: totalExpense },
   ];
 
+  // 🔹 Expense by Category for Budget Comparison
+const expenseMap: any = {};
+
+transactions
+  .filter((t) => t.type === "expense")
+  .forEach((t) => {
+    const category = t.category || "Other";
+    if (!expenseMap[category]) expenseMap[category] = 0;
+    expenseMap[category] += Number(t.amount);
+  });
+
   return (
     <div className="p-6 min-h-screen bg-gray-100 space-y-8">
       {/* Header */}
@@ -118,6 +155,13 @@ export default function Dashboard() {
           className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700"
         >
           Add Transaction
+        </button>
+
+        <button
+          onClick={() => router.push("/budget")}
+          className="bg-purple-600 text-white px-5 py-2 rounded-lg shadow hover:bg-purple-700"
+        >
+          Set Budget
         </button>
 
         <button
@@ -179,6 +223,46 @@ export default function Dashboard() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Budget Progress Section */}
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h2 className="text-xl font-bold mb-4">Budget Progress</h2>
+
+        {budgets.length === 0 && (
+          <p className="text-gray-500">No budgets set yet.</p>
+        )}
+
+        {budgets.map((budget) => {
+          const spent = expenseMap[budget.category] || 0;
+          const percentage = (spent / budget.monthlyLimit) * 100;
+
+          return (
+            <div key={budget.id} className="mb-5">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium">{budget.category}</span>
+                <span>
+                  ${spent} / ${budget.monthlyLimit}
+                </span>
+              </div>
+
+              <div className="w-full bg-gray-200 h-4 rounded">
+                <div
+                  className={`h-4 rounded transition-all duration-500 ${
+                    percentage > 100 ? "bg-red-500" : "bg-green-500"
+                  }`}
+                  style={{ width: `${Math.min(percentage, 100)}%` }}
+                />
+              </div>
+
+              {percentage > 100 && (
+                <p className="text-red-500 text-xs mt-1">
+                  Budget exceeded!
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Recent Transactions */}
