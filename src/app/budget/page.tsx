@@ -56,15 +56,22 @@ export default function BudgetPage() {
   );
 
   const calculatedBudgets = filteredBudgets.map((budget) => {
-    const spent = transactions
-      .filter(
-        (t) =>
-          t.type === "expense" &&
-          t.category === budget.category &&
-          new Date(t.date).getMonth() + 1 === month &&
-          new Date(t.date).getFullYear() === year
-      )
-      .reduce((sum, txn) => sum + txn.amount, 0);
+    const spent = transactions.reduce((sum, t) => {
+      if (t.type !== "expense") return sum;
+      if (t.category !== budget.category) return sum;
+      if (!t.date?.toDate) return sum;
+
+      const txnDate = t.date.toDate();
+
+      if (
+        txnDate.getMonth() + 1 === month &&
+        txnDate.getFullYear() === year
+      ) {
+        return sum + Number(t.amount || 0);
+      }
+
+      return sum;
+    }, 0);
 
     return { ...budget, spent };
   });
