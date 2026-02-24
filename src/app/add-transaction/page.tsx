@@ -209,27 +209,33 @@ export default function AddTransaction() {
                   ) : (
                     <>
                       {!isOtherCategory ? (
-                        <select
-                          className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          value={category}
-                          onChange={(e) => {
-                            if (e.target.value === "other") {
-                              setIsOtherCategory(true);
-                              setCategory("");
-                            } else {
-                              setCategory(e.target.value);
-                            }
-                          }}
-                          required
-                        >
-                          <option value="">Select Category</option>
-                          {categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                          <option value="other">Other</option>
-                        </select>
+                        <div className="relative">
+                          <select
+                            className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none"
+                            value={category}
+                            onChange={(e) => {
+                              if (e.target.value === "other") {
+                                setIsOtherCategory(true);
+                                setCategory("");
+                              } else {
+                                setCategory(e.target.value);
+                              }
+                            }}
+                            required
+                          >
+                            <option value="">Select Category</option>
+                            {categories.map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                            <option value="other">Other</option>
+                          </select>
+                          {/* Down arrow */}
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            ▼
+                          </span>
+                        </div>
                       ) : (
                         <input
                           type="text"
