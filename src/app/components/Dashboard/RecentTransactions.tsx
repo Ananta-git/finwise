@@ -4,7 +4,7 @@ export default function RecentTransactions({ transactions }: any) {
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="text-left text-gray-400 border-b">
+        <tr className="text-left text-gray-700 border-b">
           <th className="pb-4">Category</th>
           <th className="pb-4">Type</th>
           <th className="pb-4 text-right">Amount</th>
