@@ -18,7 +18,7 @@ export default function Sidebar() {
     { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { label: "Add Transaction", path: "/add-transaction", icon: PlusCircle },
     { label: "Budgets", path: "/budget", icon: Wallet },
-    { label: "Reports", path: "/transactions", icon: BarChart3 },
+    { label: "Reports", path: "/reports", icon: BarChart3 },
     { label: "Goals", path: "/goals", icon: Target },
     { label: "Settings", path: "/settings", icon: Settings },
   ];
