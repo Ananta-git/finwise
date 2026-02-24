@@ -425,7 +425,7 @@ export default function BudgetPage() {
                             <td className="p-3 text-[#2563EB] font-medium">Rs {b.monthlyLimit}</td>
                             <td className="p-3 text-[#DC2626] font-medium">Rs {b.spent || 0}</td>
                             <td
-                              className={`p-3 font-medium ${
+                              className={`p-1 font-medium ${
                                 remaining < 0
                                   ? "bg-red-100 text-red-700"  // highlight negative values
                                   : "text-[#16A34A]"
