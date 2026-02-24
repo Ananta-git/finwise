@@ -408,8 +408,12 @@ export default function BudgetPage() {
                           100,
                           ((b.spent || 0) / b.monthlyLimit) * 100
                         );
-                        const progressColor =
-                          percent < 80 ? "#16A34A" : percent <= 100 ? "#FBBF24" : "#DC2626";
+                      const progressColor =
+                        percent < 80
+                          ? "#16A34A"   // green
+                          : percent <= 100
+                          ? "#FBBF24"   // yellow
+                          : "#DC2626";  // red
                         const rowBg = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
 
                         return (
@@ -418,9 +422,9 @@ export default function BudgetPage() {
                             className={`${rowBg} hover:bg-gray-100 transition-colors`}
                           >
                             <td className="p-3 text-gray-800 font-medium">{b.category}</td>
-                            <td className="p-3 text-gray-800 font-medium">Rs {b.monthlyLimit}</td>
-                            <td className="p-3 text-gray-800 font-medium">Rs {b.spent || 0}</td>
-                            <td className="p-3 text-gray-800 font-medium">Rs {remaining}</td>
+                            <td className="p-3 text-[#2563EB] font-medium">Rs {b.monthlyLimit}</td>
+                            <td className="p-3 text-[#DC2626] font-medium">Rs {b.spent || 0}</td>
+                            <td className="p-3 text-[#16A34A] font-medium">Rs {remaining}</td>
                             <td className="p-3">
                               <div className="w-full bg-gray-200 rounded-full h-3">
                                 <div
