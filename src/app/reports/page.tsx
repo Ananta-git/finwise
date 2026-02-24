@@ -219,18 +219,18 @@ export default function ReportsPage() {
             />
           </div>
 
-          {/* Filters */}
-          <div className="bg-white p-6 rounded-2xl shadow border flex flex-col sm:flex-row gap-4">
+        {/* Filters */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <select
-              className="border px-4 py-2 rounded-xl focus:ring-2 focus:ring-[#2563EB]"
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
+                className="w-full sm:w-auto border border-gray-300 bg-gray-50 text-gray-800 px-4 py-3 rounded-xl font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] transition hover:bg-gray-100"
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
             >
-              <option value="month">This Month</option>
-              <option value="week">Last 7 Days</option>
-              <option value="all">All Time</option>
+                <option value="month">This Month</option>
+                <option value="week">Last 7 Days</option>
+                <option value="all">All Time</option>
             </select>
-          </div>
+        </div>
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -249,42 +249,44 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Transactions Table */}
-          <div className="bg-white p-6 rounded-2xl shadow border overflow-x-auto">
-            <h3 className="font-semibold mb-4 text-gray-800">
-              Detailed Transactions
-            </h3>
-            <table className="min-w-full text-left">
-              <thead className="border-b">
-                <tr>
-                  <th className="p-3">Category</th>
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Amount</th>
-                  <th className="p-3">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTransactions.map((t) => (
-                  <tr key={t.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">{t.category}</td>
-                    <td
-                      className={`p-3 font-medium ${
-                        t.type === "income"
-                          ? "text-green-600"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {t.type}
-                    </td>
-                    <td className="p-3">Rs {t.amount}</td>
-                    <td className="p-3 text-gray-500">
-                      {t.note || "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            {/* Transactions Table */}
+            <div className="bg-white p-6 rounded-2xl shadow border overflow-x-auto">
+                <h3 className="font-semibold mb-4 text-gray-800 text-lg">
+                    Detailed Transactions
+                </h3>
+                <table className="min-w-full text-left">
+                    <thead className="border-b bg-gray-50">
+                    <tr>
+                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Category</th>
+                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Type</th>
+                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Amount</th>
+                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Notes</th>
+                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Date & Time</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {filteredTransactions.map((t) => {
+                        const txnDate = t.date?.toDate ? t.date.toDate() : new Date();
+                        const formattedDate = txnDate.toLocaleDateString(); // e.g., 24/02/2026
+                        const formattedTime = txnDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // e.g., 14:35
+
+                        return (
+                        <tr key={t.id} className="border-b hover:bg-gray-50 transition-colors">
+                            <td className="p-3">{t.category}</td>
+                            <td className={`p-3 font-medium ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
+                            {t.type}
+                            </td>
+                            <td className="p-3 font-semibold text-gray-800">Rs {t.amount}</td>
+                            <td className="p-3 text-gray-500">{t.note || "-"}</td>
+                            <td className="p-3 text-gray-600 text-sm sm:text-base">
+                            {formattedDate} • {formattedTime}
+                            </td>
+                        </tr>
+                        );
+                    })}
+                    </tbody>
+                </table>
+            </div>
 
         </main>
       </div>
