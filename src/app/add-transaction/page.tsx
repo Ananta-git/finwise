@@ -106,7 +106,7 @@ export default function AddTransaction() {
           <h2 className="text-3xl font-bold text-gray-800">
             Add Transaction
           </h2>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-600 mt-1">
             Record your income or expenses to keep your finances updated.
           </p>
         </div>
@@ -166,7 +166,7 @@ export default function AddTransaction() {
                   <input
                     type="text"
                     placeholder="e.g., Salary"
-                    className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     required
@@ -175,7 +175,7 @@ export default function AddTransaction() {
                   <>
                     {!isOtherCategory ? (
                       <select
-                        className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         value={category}
                         onChange={(e) => {
                           if (e.target.value === "other") {
@@ -199,7 +199,7 @@ export default function AddTransaction() {
                       <input
                         type="text"
                         placeholder="Enter new category"
-                        className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         required
@@ -219,7 +219,7 @@ export default function AddTransaction() {
                   min="0.01"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   required
@@ -235,7 +235,7 @@ export default function AddTransaction() {
                   rows={3}
                   maxLength={200}
                   placeholder="Add additional details..."
-                  className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border text-gray-500 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                 />
@@ -246,7 +246,7 @@ export default function AddTransaction() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-[#2563EB] hover:bg-[#1E40AF] text-white py-3 rounded-xl font-medium transition"
+                  className="flex-1 bg-[#F4A261] hover:bg-[#d6a57d] text-white py-3 rounded-xl font-medium transition"
                 >
                   {loading ? "Adding..." : "Add Transaction"}
                 </button>
