@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
+import Sidebar from "../components/Dashboard/Sidebar";
 import {
   collection,
   getDocs,
@@ -95,24 +96,7 @@ export default function AddTransaction() {
     <div className="min-h-screen bg-[#F9FAFB] flex">
 
       {/* Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r p-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">FinWise</h1>
-
-        <nav className="flex flex-col gap-4 text-gray-600">
-          <Link href="/dashboard" className="hover:text-blue-600 transition">
-            Dashboard
-          </Link>
-          <Link href="/add-transaction" className="text-blue-600 font-semibold">
-            Add Transaction
-          </Link>
-          <Link href="/budget" className="hover:text-blue-600 transition">
-            Budgets
-          </Link>
-          <Link href="/transactions" className="hover:text-blue-600 transition">
-            Transactions
-          </Link>
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <div className="flex-1 p-6 md:p-10">
