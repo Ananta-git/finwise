@@ -246,7 +246,7 @@ export default function AddTransaction() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-[#F4A261] hover:bg-[#d6a57d] text-white py-3 rounded-xl font-medium transition"
+                  className="flex-1 bg-[#F4A261]  text-sm shadow-sm hover:opacity-90 text-white py-3 rounded-xl font-medium transition"
                 >
                   {loading ? "Adding..." : "Add Transaction"}
                 </button>
