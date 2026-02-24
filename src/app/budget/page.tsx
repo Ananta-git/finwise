@@ -278,7 +278,7 @@ export default function BudgetPage() {
                 </label>
                 <input
                   type="number"
-                  placeholder="₹ 0.00"
+                  placeholder="Rs 0.00"
                   className={`w-full border rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
                     errors.monthlyLimit
                       ? "border-red-500 ring-red-500"
