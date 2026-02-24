@@ -272,12 +272,12 @@ export default function ReportsPage() {
 
                         return (
                         <tr key={t.id} className="border-b hover:bg-gray-50 transition-colors">
-                            <td className="p-3">{t.category}</td>
+                            <td className="p-3 text-gray-600">{t.category}</td>
                             <td className={`p-3 font-medium ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
                             {t.type}
                             </td>
                             <td className="p-3 font-semibold text-gray-800">Rs {t.amount}</td>
-                            <td className="p-3 text-gray-500">{t.note || "-"}</td>
+                            <td className="p-3 text-gray-600">{t.note || "-"}</td>
                             <td className="p-3 text-gray-600 text-sm sm:text-base">
                             {formattedDate} • {formattedTime}
                             </td>
