@@ -16,6 +16,7 @@ import Sidebar from "../components/Dashboard/Sidebar";
 import { useRouter } from "next/navigation";
 import { Bar, Pie } from "react-chartjs-2";
 import { toast, Toaster } from "react-hot-toast";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -78,33 +79,41 @@ export default function BudgetPage() {
 
   // Fetch budgets filtered by month/year
   useEffect(() => {
-    if (!auth.currentUser) return;
+    let unsubscribeBudgets: any;
+    let unsubscribeTransactions: any;
 
-    const budgetsRef = collection(db, "users", auth.currentUser.uid, "budgets");
-    const transactionsRef = collection(db, "users", auth.currentUser.uid, "transactions");
-
-    const unsubscribeBudgets = onSnapshot(
-      query(budgetsRef, orderBy("createdAt", "desc")),
-      (budgetSnap) => {
-        const budgetData: Budget[] = budgetSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Budget, "id">),
-        }));
-
-        setBudgets(budgetData);
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.push("/login");
+        return;
       }
-    );
 
-    const unsubscribeTransactions = onSnapshot(transactionsRef, (txnSnap) => {
-      const transactions = txnSnap.docs.map((doc) => doc.data());
-      setTransactions(transactions);
+      const budgetsRef = collection(db, "users", user.uid, "budgets");
+      const transactionsRef = collection(db, "users", user.uid, "transactions");
+
+      unsubscribeBudgets = onSnapshot(
+        query(budgetsRef, orderBy("createdAt", "desc")),
+        (budgetSnap) => {
+          const budgetData: Budget[] = budgetSnap.docs.map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as Omit<Budget, "id">),
+          }));
+          setBudgets(budgetData);
+        }
+      );
+
+      unsubscribeTransactions = onSnapshot(transactionsRef, (txnSnap) => {
+        const txnData = txnSnap.docs.map((doc) => doc.data());
+        setTransactions(txnData);
+      });
     });
 
     return () => {
-      unsubscribeBudgets();
-      unsubscribeTransactions();
+      unsubscribeAuth();
+      if (unsubscribeBudgets) unsubscribeBudgets();
+      if (unsubscribeTransactions) unsubscribeTransactions();
     };
-  }, []);
+  }, [router]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
