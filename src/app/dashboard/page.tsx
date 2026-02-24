@@ -133,7 +133,7 @@ export default function Dashboard() {
 
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-gray-100 p-8 hidden lg:block">
-        <h2 className="text-2xl font-bold text-[#0F3D3E] tracking-wide mb-12">
+        <h2 className="text-2xl font-bold text-[#0F3D3E] tracking-tight mb-12">
           FinWise
         </h2>
 
@@ -187,6 +187,7 @@ export default function Dashboard() {
 
           {/* HERO CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+
             <HeroCard title="Total Balance" value={balance} color="primary" />
             <HeroCard title="Total Income" value={totalIncome} color="income" />
             <HeroCard title="Total Expense" value={totalExpense} color="expense" />
@@ -204,6 +205,7 @@ export default function Dashboard() {
               }
               color="primary"
             />
+
           </div>
 
           {/* CHARTS */}
@@ -212,13 +214,19 @@ export default function Dashboard() {
             <ChartCard title="Expense Breakdown">
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={expenseByCategory} dataKey="value" nameKey="name" outerRadius={100} />
+                  <Pie
+                    data={expenseByCategory}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={100}
+                    label
+                  />
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="Income vs Expense">
+            <ChartCard title="Income vs Expense Trend">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={barData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -233,7 +241,90 @@ export default function Dashboard() {
 
           </div>
 
-          {/* FOOTER */}
+          {/* BUDGET PROGRESS */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="text-lg font-semibold mb-6 text-[#0F3D3E]">
+              Budget Comparison
+            </h2>
+
+            {budgets.map((budget) => {
+              const spent = expenseMap[budget.category] || 0;
+              const percentage = (spent / budget.monthlyLimit) * 100;
+
+              return (
+                <div key={budget.id} className="mb-6">
+                  <div className="flex justify-between text-sm mb-2 text-gray-600">
+                    <span>{budget.category}</span>
+                    <span>${spent} / ${budget.monthlyLimit}</span>
+                  </div>
+
+                  <div className="w-full bg-gray-200 h-3 rounded-full">
+                    <div
+                      className={`h-3 rounded-full ${
+                        percentage > 100
+                          ? "bg-[#DC2626]"
+                          : percentage > 80
+                          ? "bg-[#F4A261]"
+                          : "bg-[#16A34A]"
+                      }`}
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
+                    />
+                  </div>
+
+                  {percentage > 100 && (
+                    <p className="text-[#DC2626] text-xs mt-2">
+                      Budget exceeded
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* GOALS */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="text-lg font-semibold mb-6 text-[#0F3D3E]">
+              Savings Goals
+            </h2>
+
+            <GoalCard title="Emergency Fund" target={1000} current={balance} />
+            <GoalCard title="Vacation" target={500} current={balance} />
+          </div>
+
+          {/* RECENT TRANSACTIONS */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="text-lg font-semibold mb-4 text-[#0F3D3E]">
+              Recent Transactions
+            </h2>
+
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b">
+                  <th className="pb-3">Category</th>
+                  <th className="pb-3">Type</th>
+                  <th className="pb-3">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.slice(0, 5).map((t) => (
+                  <tr key={t.id} className="border-b">
+                    <td className="py-3">{t.category || "Other"}</td>
+                    <td className="py-3 capitalize">{t.type}</td>
+                    <td
+                      className={`py-3 font-semibold ${
+                        t.type === "income"
+                          ? "text-[#16A34A]"
+                          : "text-[#DC2626]"
+                      }`}
+                    >
+                      ${t.amount}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
           <footer className="text-center text-sm text-gray-500 pt-10">
             FinWise v1.0 • Smart Finance Tracker
           </footer>
@@ -281,10 +372,29 @@ const HeroCard = ({ title, value, color }: any) => {
 };
 
 const ChartCard = ({ title, children }: any) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
     <h2 className="text-lg font-semibold text-[#0F3D3E] mb-4">
       {title}
     </h2>
     {children}
   </div>
 );
+
+const GoalCard = ({ title, target, current }: any) => {
+  const percentage = Math.min((current / target) * 100, 100);
+
+  return (
+    <div className="mb-6">
+      <div className="flex justify-between text-sm mb-2 text-gray-600">
+        <span>{title}</span>
+        <span>${current} / ${target}</span>
+      </div>
+      <div className="w-full bg-gray-200 h-3 rounded-full">
+        <div
+          className="bg-[#0F3D3E] h-3 rounded-full"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
+  );
+};
