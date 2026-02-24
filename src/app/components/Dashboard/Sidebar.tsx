@@ -59,7 +59,10 @@ export default function Sidebar() {
     <>
       {/* ========== MOBILE TOP BAR ========== */}
       <div className="lg:hidden flex items-center justify-between px-4 py-4 bg-white border-b border-gray-200">
-        <h2 className="text-xl font-bold text-[#0F3D3E]">FinWise</h2>
+        <h2 className="text-xl font-bold text-[#0F3D3E]">
+          <span className="sm:hidden">FW</span>
+          <span className="hidden sm:inline">FinWise</span>
+        </h2>
         <button onClick={() => setIsOpen(true)}>
           <Menu size={24} />
         </button>
