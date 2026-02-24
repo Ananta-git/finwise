@@ -22,10 +22,7 @@ import {
   YAxis,
   CartesianGrid,
   Legend,
-  Cell,
 } from "recharts";
-
-import CountUp from "react-countup";
 
 type TransactionType = {
   id: string;
@@ -132,72 +129,90 @@ export default function Dashboard() {
     });
 
   return (
-    <div className="flex min-h-screen bg-[#F8FBFA]">
+    <div className="flex min-h-screen bg-[#F8FBFA] text-gray-800">
 
       {/* SIDEBAR */}
-      <aside className="w-64 bg-white/80 backdrop-blur-md shadow-lg p-6 hidden lg:block border-r border-gray-100">
-        <h2 className="text-2xl font-bold text-[#0F3D3E] mb-10 tracking-wide">
+      <aside className="w-64 bg-white border-r border-gray-100 p-8 hidden lg:block">
+        <h2 className="text-2xl font-bold text-[#0F3D3E] tracking-wide mb-12">
           FinWise
         </h2>
 
-        <nav className="space-y-4 text-sm font-medium">
-          {[
-            { name: "Dashboard", path: "/dashboard" },
-            { name: "Add Transaction", path: "/add-transaction" },
-            { name: "Budgets", path: "/budget" },
-            { name: "Reports", path: "/transactions" },
-          ].map((item) => (
-            <button
-              key={item.path}
-              onClick={() => router.push(item.path)}
-              className="block w-full text-left px-3 py-2 rounded-xl hover:bg-[#E2F3F5] hover:text-[#0F3D3E] transition-all duration-200"
-            >
-              {item.name}
-            </button>
-          ))}
+        <nav className="space-y-6 text-sm font-medium text-gray-600">
+          <button onClick={() => router.push("/dashboard")} className="block hover:text-[#0F3D3E] transition">
+            Dashboard
+          </button>
+          <button onClick={() => router.push("/add-transaction")} className="block hover:text-[#0F3D3E] transition">
+            Add Transaction
+          </button>
+          <button onClick={() => router.push("/budget")} className="block hover:text-[#0F3D3E] transition">
+            Budgets
+          </button>
+          <button onClick={() => router.push("/transactions")} className="block hover:text-[#0F3D3E] transition">
+            Reports
+          </button>
+          <button className="block hover:text-[#0F3D3E] transition">
+            Goals
+          </button>
+          <button className="block hover:text-[#0F3D3E] transition">
+            Settings
+          </button>
         </nav>
       </aside>
 
       {/* MAIN */}
       <div className="flex-1 flex flex-col">
 
-        {/* HEADER */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-[#0F3D3E]">
+        {/* TOP NAV */}
+        <header className="bg-white border-b border-gray-100 px-10 py-5 flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-[#0F3D3E] tracking-tight">
             Advanced Dashboard
           </h1>
 
-          <button
-            onClick={handleLogout}
-            className="bg-[#F4A261] hover:scale-105 active:scale-95 transition-all duration-300 text-white px-4 py-2 rounded-xl shadow-sm"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-6">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="border border-gray-200 px-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D3E]/20"
+            />
+            <button
+              onClick={handleLogout}
+              className="bg-[#F4A261] text-white px-5 py-2 rounded-xl text-sm shadow-sm hover:opacity-90 transition"
+            >
+              Logout
+            </button>
+          </div>
         </header>
 
-        <main className="p-8 space-y-10 animate-fadeIn">
+        <main className="p-10 space-y-12">
 
           {/* HERO CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <HeroCard title="Total Balance" value={balance} color="#0F3D3E" />
-            <HeroCard title="Total Income" value={totalIncome} color="#16A34A" />
-            <HeroCard title="Total Expense" value={totalExpense} color="#DC2626" />
-            <HeroCard title="Active Budgets" value={budgets.length} color="#F4A261" />
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <HeroCard title="Total Balance" value={balance} color="primary" />
+            <HeroCard title="Total Income" value={totalIncome} color="income" />
+            <HeroCard title="Total Expense" value={totalExpense} color="expense" />
+            <HeroCard title="Active Budgets" value={budgets.length} color="accent" />
+            <HeroCard
+              title="Budget Usage %"
+              value={
+                budgets.length
+                  ? Math.round(
+                      (totalExpense /
+                        budgets.reduce((a, b) => a + Number(b.monthlyLimit), 0)) *
+                        100
+                    )
+                  : 0
+              }
+              color="primary"
+            />
           </div>
 
           {/* CHARTS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
             <ChartCard title="Expense Breakdown">
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={expenseByCategory} dataKey="value" nameKey="name" outerRadius={100}>
-                    {expenseByCategory.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={["#0F3D3E", "#F4A261", "#16A34A", "#DC2626"][index % 4]}
-                      />
-                    ))}
-                  </Pie>
+                  <Pie data={expenseByCategory} dataKey="value" nameKey="name" outerRadius={100} />
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
@@ -215,43 +230,13 @@ export default function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
+
           </div>
 
-          {/* BUDGET PROGRESS */}
-          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">
-            <h2 className="text-lg font-semibold mb-6 text-[#0F3D3E]">
-              Budget Comparison
-            </h2>
-
-            {budgets.map((budget) => {
-              const spent = expenseMap[budget.category] || 0;
-              const percentage = (spent / budget.monthlyLimit) * 100;
-
-              return (
-                <div key={budget.id} className="mb-6">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>{budget.category}</span>
-                    <span>${spent} / ${budget.monthlyLimit}</span>
-                  </div>
-
-                  <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
-                    <div
-                      className="h-4 rounded-full transition-all duration-1000 ease-out"
-                      style={{
-                        width: `${Math.min(percentage, 100)}%`,
-                        backgroundColor:
-                          percentage > 100
-                            ? "#DC2626"
-                            : percentage > 80
-                            ? "#F4A261"
-                            : "#16A34A",
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* FOOTER */}
+          <footer className="text-center text-sm text-gray-500 pt-10">
+            FinWise v1.0 • Smart Finance Tracker
+          </footer>
 
         </main>
       </div>
@@ -259,23 +244,44 @@ export default function Dashboard() {
   );
 }
 
-/* ---------- COMPONENTS ---------- */
+/* COLOR SYSTEM */
 
-const HeroCard = ({ title, value, color }: any) => (
-  <div
-    className="p-6 rounded-2xl shadow-md border-l-4 bg-white
-    transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-    style={{ borderColor: color }}
-  >
-    <p className="text-sm text-gray-500">{title}</p>
-    <p className="text-3xl font-bold mt-3" style={{ color }}>
-      <CountUp end={value} duration={1.2} separator="," />
-    </p>
-  </div>
-);
+const colorStyles: any = {
+  primary: {
+    border: "border-[#0F3D3E]",
+    text: "text-[#0F3D3E]",
+  },
+  accent: {
+    border: "border-[#F4A261]",
+    text: "text-[#F4A261]",
+  },
+  income: {
+    border: "border-[#16A34A]",
+    text: "text-[#16A34A]",
+  },
+  expense: {
+    border: "border-[#DC2626]",
+    text: "text-[#DC2626]",
+  },
+};
+
+const HeroCard = ({ title, value, color }: any) => {
+  const style = colorStyles[color] || colorStyles.primary;
+
+  return (
+    <div className={`p-6 rounded-2xl bg-white border-l-4 shadow-sm ${style.border}`}>
+      <p className="text-sm text-gray-500 tracking-wide">
+        {title}
+      </p>
+      <p className={`text-3xl font-bold mt-3 ${style.text}`}>
+        {value}
+      </p>
+    </div>
+  );
+};
 
 const ChartCard = ({ title, children }: any) => (
-  <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300">
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
     <h2 className="text-lg font-semibold text-[#0F3D3E] mb-4">
       {title}
     </h2>
