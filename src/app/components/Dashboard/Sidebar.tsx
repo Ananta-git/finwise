@@ -83,7 +83,10 @@ export default function Sidebar() {
           lg:hidden`}
       >
         <div className="flex items-center justify-between px-6 py-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-[#0F3D3E]">FinWise</h2>
+          <h2 className="text-xl font-bold text-[#0F3D3E]">
+            <span className="sm:hidden">FW</span>
+            <span className="hidden sm:inline">FinWise</span>
+          </h2>
           <button onClick={() => setIsOpen(false)}>
             <X size={22} />
           </button>
