@@ -276,8 +276,13 @@ export default function ReportsPage() {
                             <td className={`p-3 font-medium ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
                             {t.type}
                             </td>
-                            <td className="p-3 font-semibold text-gray-800">Rs {t.amount}</td>
-                            <td className="p-3 text-gray-600">{t.note || "-"}</td>
+                            <td
+                            className={`p-3 font-semibold ${
+                                t.type === "income" ? "text-green-600" : "text-red-500"
+                            }`}
+                            >
+                            Rs {t.amount}
+                            </td>                            <td className="p-3 text-gray-600">{t.note || "-"}</td>
                             <td className="p-3 text-gray-600 text-sm sm:text-base">
                             {formattedDate} • {formattedTime}
                             </td>
