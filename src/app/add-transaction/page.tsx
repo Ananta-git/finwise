@@ -339,7 +339,7 @@ export default function AddTransaction() {
                             : "text-red-500"
                         }`}
                       >
-                        ₹ {tx.amount}
+                        Rs {tx.amount}
                       </p>
                     </div>
                   ))

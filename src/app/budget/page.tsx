@@ -227,19 +227,19 @@ export default function BudgetPage() {
             <div className="bg-white p-6 rounded-2xl shadow border">
               <p className="text-sm text-gray-500">Total Budget</p>
               <p className="text-2xl font-bold text-[#2563EB]">
-                ₹ {budgets.reduce((a, b) => a + b.monthlyLimit, 0)}
+                Rs {budgets.reduce((a, b) => a + b.monthlyLimit, 0)}
               </p>
             </div>
             <div className="bg-white p-6 rounded-2xl shadow border">
               <p className="text-sm text-gray-500">Total Spent</p>
               <p className="text-2xl font-bold text-[#DC2626]">
-                ₹ {budgets.reduce((a, b) => a + (b.spent || 0), 0)}
+                Rs {budgets.reduce((a, b) => a + (b.spent || 0), 0)}
               </p>
             </div>
             <div className="bg-white p-6 rounded-2xl shadow border">
               <p className="text-sm text-gray-500">Remaining Budget</p>
               <p className="text-2xl font-bold text-[#16A34A]">
-                ₹ {budgets.reduce((a, b) => a + b.monthlyLimit - (b.spent || 0), 0)}
+                Rs {budgets.reduce((a, b) => a + b.monthlyLimit - (b.spent || 0), 0)}
               </p>
             </div>
           </div>
@@ -356,9 +356,9 @@ export default function BudgetPage() {
                             className={`${rowBg} hover:bg-gray-100 transition-colors`}
                           >
                             <td className="p-3 text-gray-800 font-medium">{b.category}</td>
-                            <td className="p-3 text-gray-800 font-medium">₹ {b.monthlyLimit}</td>
-                            <td className="p-3 text-gray-800 font-medium">₹ {b.spent || 0}</td>
-                            <td className="p-3 text-gray-800 font-medium">₹ {remaining}</td>
+                            <td className="p-3 text-gray-800 font-medium">Rs {b.monthlyLimit}</td>
+                            <td className="p-3 text-gray-800 font-medium">Rs {b.spent || 0}</td>
+                            <td className="p-3 text-gray-800 font-medium">Rs {remaining}</td>
                             <td className="p-3">
                               <div className="w-full bg-gray-200 rounded-full h-3">
                                 <div
