@@ -124,32 +124,46 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F4F7F6]">
-      <Sidebar />
 
-      <div className="flex-1 flex flex-col">
+      {/* Sidebar - hidden on small screens */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      <div className="flex-1 flex flex-col w-full">
+
         {/* Header */}
-        <header className="bg-white border-b border-gray-100 px-12 py-6 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-[#0F3D3E] tracking-tight">
+        <header className="bg-white border-b border-gray-100 
+                          px-4 sm:px-6 md:px-10 lg:px-12 
+                          py-4 sm:py-5 md:py-6 
+                          flex flex-col sm:flex-row 
+                          gap-4 sm:gap-0 
+                          justify-between sm:items-center">
+
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#0F3D3E] tracking-tight">
             Financial Overview
           </h1>
-          <div className="flex items-center gap-6">
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
             <input
               type="text"
               placeholder="Search transactions..."
-              className="border border-gray-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D3E]/20 transition"
+              className="w-full sm:w-64 border border-gray-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D3E]/20 transition"
             />
+
             <button
               onClick={handleLogout}
-              className="bg-[#F4A261] text-white px-6 py-2.5 rounded-xl text-sm shadow-sm hover:opacity-90 transition"
+              className="bg-[#F4A261] text-white px-6 py-2.5 rounded-xl text-sm shadow-sm hover:opacity-90 transition w-full sm:w-auto"
             >
               Logout
             </button>
           </div>
         </header>
 
-        <main className="px-12 py-10 space-y-14">
+        <main className="px-4 sm:px-6 md:px-10 lg:px-12 py-8 sm:py-10 space-y-12">
+
           {/* Hero Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-8">
             <HeroCard title="Total Balance" value={balance} color="primary" />
             <HeroCard title="Total Income" value={totalIncome} color="income" />
             <HeroCard title="Total Expense" value={totalExpense} color="expense" />
@@ -159,7 +173,8 @@ export default function Dashboard() {
               value={
                 budgets.length
                   ? Math.round(
-                      (totalExpense / budgets.reduce((a, b) => a + Number(b.monthlyLimit), 0)) *
+                      (totalExpense /
+                        budgets.reduce((a, b) => a + Number(b.monthlyLimit), 0)) *
                         100
                     )
                   : 0
@@ -169,18 +184,18 @@ export default function Dashboard() {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
             <ChartCard title="Expense Breakdown">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
-                  <Pie data={expenseByCategory} dataKey="value" outerRadius={110} />
+                  <Pie data={expenseByCategory} dataKey="value" outerRadius={100} />
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
             </ChartCard>
 
             <ChartCard title="Income vs Expense">
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={barData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
@@ -198,18 +213,24 @@ export default function Dashboard() {
             {budgets.map((budget) => {
               const spent = expenseMap[budget.category] || 0;
               const percentage = (spent / budget.monthlyLimit) * 100;
+
               return (
-                <div key={budget.id} className="mb-7">
-                  <div className="flex justify-between text-sm mb-2 text-gray-600">
+                <div key={budget.id} className="mb-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between text-sm mb-2 text-gray-600 gap-1">
                     <span>{budget.category}</span>
                     <span>
                       ${spent} / ${budget.monthlyLimit}
                     </span>
                   </div>
+
                   <div className="w-full bg-gray-200 h-3 rounded-full">
                     <div
                       className={`h-3 rounded-full transition-all duration-300 ${
-                        percentage > 100 ? "bg-[#DC2626]" : percentage > 80 ? "bg-[#F4A261]" : "bg-[#16A34A]"
+                        percentage > 100
+                          ? "bg-[#DC2626]"
+                          : percentage > 80
+                          ? "bg-[#F4A261]"
+                          : "bg-[#16A34A]"
                       }`}
                       style={{ width: `${Math.min(percentage, 100)}%` }}
                     />
@@ -221,18 +242,23 @@ export default function Dashboard() {
 
           {/* Goals */}
           <SectionCard title="Savings Goals">
-            <GoalCard title="Emergency Fund" target={1000} current={balance} />
-            <GoalCard title="Vacation" target={500} current={balance} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <GoalCard title="Emergency Fund" target={1000} current={balance} />
+              <GoalCard title="Vacation" target={500} current={balance} />
+            </div>
           </SectionCard>
 
           {/* Recent Transactions */}
           <SectionCard title="Recent Transactions">
-            <RecentTransactions transactions={transactions} />
+            <div className="overflow-x-auto">
+              <RecentTransactions transactions={transactions} />
+            </div>
           </SectionCard>
 
-          <footer className="text-center text-sm text-gray-400 pt-6">
+          <footer className="text-center text-sm text-gray-400 pt-4">
             FinWise v1.0 • Smart Finance Tracker
           </footer>
+
         </main>
       </div>
     </div>
