@@ -188,6 +188,26 @@ export default function BudgetPage() {
       ],
     };
 
+    //For latest date calculation in dropdown
+    const currentYear = new Date().getFullYear();
+
+    const transactionYears = transactions
+      .filter((t) => t.date?.toDate)
+      .map((t) => t.date.toDate().getFullYear());
+
+    const budgetYears = budgets.map((b) => b.year);
+
+    const allYears = [...transactionYears, ...budgetYears];
+
+    const startYear =
+      allYears.length > 0
+        ? Math.min(...allYears)
+        : currentYear;
+
+    const years = Array.from(
+      { length: currentYear - startYear + 1 },
+      (_, i) => startYear + i
+    );
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex relative">
@@ -256,7 +276,7 @@ export default function BudgetPage() {
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
-              {[2023, 2024, 2025].map((y) => (
+              {years.map((y) => (
                 <option key={y} value={y}>
                   {y}
                 </option>
