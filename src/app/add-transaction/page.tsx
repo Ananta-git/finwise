@@ -84,7 +84,6 @@ export default function AddTransaction() {
       );
 
       alert("Transaction added successfully!");
-      router.push("/transactions");
     } catch (error: any) {
       alert(error.message);
     } finally {
