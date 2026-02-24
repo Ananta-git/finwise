@@ -5,18 +5,7 @@ import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import {
-  PieChart,
-  Pie,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 
 import Sidebar from "../components/Dashboard/Sidebar";
 import HeroCard from "../components/Dashboard/HeroCard";
@@ -25,6 +14,7 @@ import SectionCard from "../components/Dashboard/SectionCard";
 import GoalCard from "../components/Dashboard/GoalCard";
 import RecentTransactions from "../components/Dashboard/RecentTransactions";
 
+// ✅ Define proper transaction type
 type TransactionType = {
   id: string;
   type: "income" | "expense";
@@ -35,13 +25,11 @@ type TransactionType = {
 
 export default function Dashboard() {
   const router = useRouter();
-
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [balance, setBalance] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [budgets, setBudgets] = useState<any[]>([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -73,7 +61,6 @@ export default function Dashboard() {
 
     let income = 0;
     let expense = 0;
-
     data.forEach((t) =>
       t.type === "income" ? (income += t.amount) : (expense += t.amount)
     );
@@ -136,66 +123,37 @@ export default function Dashboard() {
     });
 
   return (
-    <div className="flex min-h-screen bg-[#F4F7F6] relative">
+    <div className="flex min-h-screen bg-[#F4F7F6]">
 
-      {/* Desktop Sidebar */}
+      {/* Sidebar - hidden on small screens */}
       <div className="hidden md:block">
         <Sidebar />
-      </div>
-
-      {/* Mobile Drawer */}
-      <div
-        className={`fixed inset-0 z-40 md:hidden transition ${
-          mobileMenuOpen ? "visible" : "invisible"
-        }`}
-      >
-        {/* Overlay */}
-        <div
-          className={`absolute inset-0 bg-black/40 transition-opacity ${
-            mobileMenuOpen ? "opacity-100" : "opacity-0"
-          }`}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-
-        {/* Drawer */}
-        <div
-          className={`absolute left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ${
-            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <Sidebar />
-        </div>
       </div>
 
       <div className="flex-1 flex flex-col w-full">
 
         {/* Header */}
-        <header className="bg-white border-b border-gray-100 px-4 sm:px-6 md:px-10 lg:px-12 py-4 flex justify-between items-center">
+        <header className="bg-white border-b border-gray-100 
+                          px-4 sm:px-6 md:px-10 lg:px-12 
+                          py-4 sm:py-5 md:py-6 
+                          flex flex-col sm:flex-row 
+                          gap-4 sm:gap-0 
+                          justify-between sm:items-center">
 
-          <div className="flex items-center gap-4">
-            {/* Hamburger */}
-            <button
-              className="md:hidden text-[#0F3D3E] text-2xl"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              ☰
-            </button>
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#0F3D3E] tracking-tight">
+            Financial Overview
+          </h1>
 
-            <h1 className="text-xl sm:text-2xl font-semibold text-[#0F3D3E] tracking-tight">
-              Financial Overview
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
             <input
               type="text"
               placeholder="Search transactions..."
-              className="hidden sm:block border border-gray-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D3E]/20 transition"
+              className="w-full sm:w-64 border border-gray-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D3E]/20 transition"
             />
 
             <button
               onClick={handleLogout}
-              className="bg-[#F4A261] text-white px-5 py-2.5 rounded-xl text-sm shadow-sm hover:opacity-90 transition"
+              className="bg-[#F4A261] text-white px-6 py-2.5 rounded-xl text-sm shadow-sm hover:opacity-90 transition w-full sm:w-auto"
             >
               Logout
             </button>
@@ -205,7 +163,7 @@ export default function Dashboard() {
         <main className="px-4 sm:px-6 md:px-10 lg:px-12 py-8 sm:py-10 space-y-12">
 
           {/* Hero Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-8">
             <HeroCard title="Total Balance" value={balance} color="primary" />
             <HeroCard title="Total Income" value={totalIncome} color="income" />
             <HeroCard title="Total Expense" value={totalExpense} color="expense" />
@@ -216,10 +174,7 @@ export default function Dashboard() {
                 budgets.length
                   ? Math.round(
                       (totalExpense /
-                        budgets.reduce(
-                          (a, b) => a + Number(b.monthlyLimit),
-                          0
-                        )) *
+                        budgets.reduce((a, b) => a + Number(b.monthlyLimit), 0)) *
                         100
                     )
                   : 0
@@ -229,7 +184,7 @@ export default function Dashboard() {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
             <ChartCard title="Expense Breakdown">
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -253,7 +208,7 @@ export default function Dashboard() {
             </ChartCard>
           </div>
 
-          {/* Budget Comparison */}
+          {/* Budgets */}
           <SectionCard title="Budget Comparison">
             {budgets.map((budget) => {
               const spent = expenseMap[budget.category] || 0;
@@ -261,7 +216,7 @@ export default function Dashboard() {
 
               return (
                 <div key={budget.id} className="mb-6">
-                  <div className="flex justify-between text-sm mb-2 text-gray-600">
+                  <div className="flex flex-col sm:flex-row sm:justify-between text-sm mb-2 text-gray-600 gap-1">
                     <span>{budget.category}</span>
                     <span>
                       ${spent} / ${budget.monthlyLimit}
