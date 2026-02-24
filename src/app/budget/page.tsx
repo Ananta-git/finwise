@@ -244,60 +244,77 @@ export default function BudgetPage() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Add Budget Form */}
-            <div className="lg:col-span-1 bg-white p-8 rounded-2xl shadow border">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Budget</h3>
-              <div className="space-y-4">
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Category (e.g., Food)"
-                    className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:outline-none ${
-                      errors.category ? "border-red-500 ring-red-500" : "focus:ring-blue-500"
-                    }`}
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  />
-                  {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
-                </div>
+          {/* Add Budget Form */}
+          <div className="lg:col-span-1 bg-white p-8 rounded-2xl shadow-md border">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">
+              Add Budget
+            </h3>
+            <div className="space-y-5">
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Food"
+                  className={`w-full border rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
+                    errors.category
+                      ? "border-red-500 ring-red-500"
+                      : "focus:ring-blue-500 border-gray-300"
+                  }`}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+                {errors.category && (
+                  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+                )}
+              </div>
 
-                <div>
-                  <input
-                    type="number"
-                    placeholder="Monthly Limit"
-                    className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:outline-none ${
-                      errors.monthlyLimit ? "border-red-500 ring-red-500" : "focus:ring-blue-500"
-                    }`}
-                    value={monthlyLimit}
-                    onChange={(e) => setMonthlyLimit(e.target.value)}
-                  />
-                  {errors.monthlyLimit && (
-                    <p className="text-red-500 text-sm mt-1">{errors.monthlyLimit}</p>
-                  )}
-                </div>
+              {/* Monthly Limit */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Monthly Limit
+                </label>
+                <input
+                  type="number"
+                  placeholder="₹ 0.00"
+                  className={`w-full border rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
+                    errors.monthlyLimit
+                      ? "border-red-500 ring-red-500"
+                      : "focus:ring-blue-500 border-gray-300"
+                  }`}
+                  value={monthlyLimit}
+                  onChange={(e) => setMonthlyLimit(e.target.value)}
+                />
+                {errors.monthlyLimit && (
+                  <p className="text-red-500 text-sm mt-1">{errors.monthlyLimit}</p>
+                )}
+              </div>
 
-                <div className="flex gap-4 pt-2">
-                  <button
-                    onClick={handleAddBudget}
-                    disabled={loading}
-                    className="flex-1 bg-[#F4A261] text-white py-3 rounded-xl font-medium hover:opacity-90 transition"
-                  >
-                    {loading ? "Adding..." : "Add Budget"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCategory("");
-                      setMonthlyLimit("");
-                      setErrors({});
-                    }}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-medium transition"
-                  >
-                    Reset
-                  </button>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex gap-4 pt-3">
+                <button
+                  onClick={handleAddBudget}
+                  disabled={loading}
+                  className="flex-1 bg-[#F4A261] text-white py-3 rounded-xl font-medium hover:bg-[#e3934b] shadow-md transition text-base"
+                >
+                  {loading ? "Adding..." : "Add Budget"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategory("");
+                    setMonthlyLimit("");
+                    setErrors({});
+                  }}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium shadow-sm transition text-base"
+                >
+                  Reset
+                </button>
               </div>
             </div>
+          </div>
 
             {/* Budget List Table */}
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow border">
