@@ -12,9 +12,9 @@ export default function RecentTransactions({ transactions }: any) {
       </thead>
       <tbody>
         {transactions.slice(0, 5).map((t: any) => (
-          <tr key={t.id} className="border-b">
+          <tr key={t.id} className="border-b text-gray-700">
             <td className="py-4">{t.category || "Other"}</td>
-            <td className="py-4 capitalize">{t.type}</td>
+            <td className="py-4 capitalize ">{t.type}</td>
             <td
               className={`py-4 text-right font-semibold ${
                 t.type === "income" ? "text-[#16A34A]" : "text-[#DC2626]"
