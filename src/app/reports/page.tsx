@@ -178,51 +178,78 @@ export default function ReportsPage() {
     ],
   };
 
-  return (
-    <div className="min-h-screen bg-[#F9FAFB] flex">
-      {/* Sidebar */}
-      <div className="hidden md:block md:w-64">
-        <Sidebar />
-      </div>
+    return (
+    <div className="min-h-screen bg-[#F9FAFB] flex relative">
 
-      <div className="flex-1 flex flex-col">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block md:w-64">
+        <Sidebar />
+        </div>
+
+        {/* Mobile Sidebar Drawer */}
+        <div
+        className={`fixed inset-0 z-40 md:hidden transition ${
+            mobileMenuOpen ? "visible" : "invisible"
+        }`}
+        >
+        {/* Overlay */}
+        <div
+            className={`absolute inset-0 bg-black/40 transition-opacity ${
+            mobileMenuOpen ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={() => setMobileMenuOpen(false)}
+        />
+
+        {/* Drawer */}
+        <div
+            className={`absolute left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ${
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+        >
+            <Sidebar />
+        </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col w-full">
+
         {/* Header */}
-        <header className="bg-white px-6 py-4 border-b flex justify-between items-center">
-          <div className="flex items-center gap-4">
+        <header className="bg-white px-4 sm:px-6 py-4 border-b flex justify-between items-center">
+            <div className="flex items-center gap-4">
             <button
-              className="md:hidden text-2xl"
-              onClick={() => setMobileMenuOpen(true)}
+                className="md:hidden text-2xl text-[#0F3D3E]"
+                onClick={() => setMobileMenuOpen(true)}
             >
-              ☰
+                ☰
             </button>
-            <h1 className="text-2xl font-semibold text-[#0F3D3E]">
-              Reports & Analytics
+            <h1 className="text-xl sm:text-2xl font-semibold text-[#0F3D3E]">
+                Reports & Analytics
             </h1>
-          </div>
+            </div>
         </header>
 
-        <main className="p-6 space-y-8">
+        <main className="p-4 sm:p-6 lg:p-8 space-y-8">
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             <Card title="Total Income" value={totalIncome} color="text-green-600" />
             <Card title="Total Expenses" value={totalExpenses} color="text-red-500" />
             <Card title="Net Balance" value={netBalance} color="text-blue-600" />
             <Card
-              title="Savings Rate"
-              value={
+                title="Savings Rate"
+                value={
                 totalIncome
-                  ? `${((netBalance / totalIncome) * 100).toFixed(1)}%`
-                  : "0%"
-              }
-              color="text-yellow-500"
+                    ? `${((netBalance / totalIncome) * 100).toFixed(1)}%`
+                    : "0%"
+                }
+                color="text-yellow-500"
             />
-          </div>
+            </div>
 
-        {/* Filters */}
-            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            {/* Filters */}
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border flex flex-col sm:flex-row gap-4">
             <select
-                className="w-full sm:w-auto border border-gray-300 bg-gray-50 text-gray-800 px-4 py-3 rounded-xl font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] transition hover:bg-gray-100"
+                className="w-full sm:w-auto border border-gray-300 bg-gray-50 text-gray-800 px-4 py-3 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
             >
@@ -230,91 +257,97 @@ export default function ReportsPage() {
                 <option value="week">Last 7 Days</option>
                 <option value="all">All Time</option>
             </select>
-        </div>
+            </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow border">
-              <h3 className="font-semibold mb-4 text-gray-800">
+            {/* Charts */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
+                <h3 className="font-semibold mb-4 text-gray-800">
                 Expense Distribution
-              </h3>
-              <Pie data={pieData} />
+                </h3>
+                <div className="h-[300px]">
+                <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow border">
-              <h3 className="font-semibold mb-4 text-gray-800">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
+                <h3 className="font-semibold mb-4 text-gray-800">
                 Income vs Expense Trend
-              </h3>
-              <Line data={lineData} />
+                </h3>
+                <div className="h-[300px]">
+                <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
             </div>
-          </div>
+            </div>
 
             {/* Transactions Table */}
-            <div className="bg-white p-6 rounded-2xl shadow border overflow-x-auto">
-                <h3 className="font-semibold mb-4 text-gray-800 text-lg">
-                    Detailed Transactions
-                </h3>
-                <table className="min-w-full text-left">
-                    <thead className="border-b bg-gray-50">
-                    <tr>
-                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Category</th>
-                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Type</th>
-                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Amount</th>
-                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Notes</th>
-                        <th className="p-3 text-sm sm:text-base font-medium text-gray-700">Date & Time</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {filteredTransactions.map((t) => {
-                        const txnDate = t.date?.toDate ? t.date.toDate() : new Date();
-                        const formattedDate = txnDate.toLocaleDateString(); // e.g., 24/02/2026
-                        const formattedTime = txnDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // e.g., 14:35
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border overflow-x-auto">
+            <h3 className="font-semibold mb-4 text-gray-800 text-lg">
+                Detailed Transactions
+            </h3>
 
-                        return (
-                        <tr key={t.id} className="border-b hover:bg-gray-50 transition-colors">
-                            <td className="p-3 text-gray-600">{t.category}</td>
-                            <td className={`p-3 font-medium ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
-                            {t.type}
-                            </td>
-                            <td
-                            className={`p-3 font-semibold ${
-                                t.type === "income" ? "text-green-600" : "text-red-500"
-                            }`}
-                            >
-                            Rs {t.amount}
-                            </td>                            <td className="p-3 text-gray-600">{t.note || "-"}</td>
-                            <td className="p-3 text-gray-600 text-sm sm:text-base">
-                            {formattedDate} • {formattedTime}
-                            </td>
-                        </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
+            <table className="min-w-[700px] w-full text-left">
+                <thead className="border-b bg-gray-50">
+                <tr>
+                    <th className="p-3 text-sm font-medium text-gray-700">Category</th>
+                    <th className="p-3 text-sm font-medium text-gray-700">Type</th>
+                    <th className="p-3 text-sm font-medium text-gray-700">Amount</th>
+                    <th className="p-3 text-sm font-medium text-gray-700">Notes</th>
+                    <th className="p-3 text-sm font-medium text-gray-700">Date & Time</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {filteredTransactions.map((t) => {
+                    const txnDate = t.date?.toDate ? t.date.toDate() : new Date();
+                    const formattedDate = txnDate.toLocaleDateString();
+                    const formattedTime = txnDate.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    });
+
+                    return (
+                    <tr key={t.id} className="border-b hover:bg-gray-50 transition-colors">
+                        <td className="p-3 text-gray-600">{t.category}</td>
+                        <td className={`p-3 font-medium ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
+                        {t.type}
+                        </td>
+                        <td className={`p-3 font-semibold ${t.type === "income" ? "text-green-600" : "text-red-500"}`}>
+                        Rs {t.amount}
+                        </td>
+                        <td className="p-3 text-gray-600">{t.note || "-"}</td>
+                        <td className="p-3 text-gray-600 text-sm">
+                        {formattedDate} • {formattedTime}
+                        </td>
+                    </tr>
+                    );
+                })}
+                </tbody>
+            </table>
             </div>
 
         </main>
-      </div>
+        </div>
     </div>
-  );
-}
+    );
+    }
 
-// Reusable Card Component
-function Card({
-  title,
-  value,
-  color,
-}: {
-  title: string;
-  value: any;
-  color: string;
-}) {
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow border">
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className={`text-2xl font-bold mt-2 ${color}`}>
-        Rs {value}
-      </p>
-    </div>
-  );
-}
+    // Reusable Card Component
+    function Card({
+    title,
+    value,
+    color,
+    }: {
+    title: string;
+    value: any;
+    color: string;
+    }) {
+    return (
+        <div className="bg-white p-6 rounded-2xl shadow border">
+        <p className="text-sm text-gray-500">{title}</p>
+        <p className={`text-2xl font-bold mt-2 ${color}`}>
+            Rs {value}
+        </p>
+        </div>
+    );
+    }
