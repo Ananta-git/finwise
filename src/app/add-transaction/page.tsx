@@ -13,7 +13,6 @@ import {
   limit,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function AddTransaction() {
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -24,6 +23,7 @@ export default function AddTransaction() {
   const [isOtherCategory, setIsOtherCategory] = useState(false);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
   // Fetch budget categories (Expense only)
@@ -93,209 +93,99 @@ export default function AddTransaction() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex">
+    <div className="min-h-screen bg-[#F9FAFB] flex relative">
 
-      {/* Sidebar */}
-      <Sidebar />
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition ${
+          mobileMenuOpen ? "visible" : "invisible"
+        }`}
+      >
+        {/* Overlay */}
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity ${
+            mobileMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+
+        {/* Drawer */}
+        <div
+          className={`absolute left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ${
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <Sidebar />
+        </div>
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 md:p-10">
+      <div className="flex-1 flex flex-col w-full">
 
-        {/* Page Header */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">
-            Add Transaction
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Record your income or expenses to keep your finances updated.
-          </p>
-        </div>
+        {/* Header */}
+        <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center md:px-10 lg:px-12">
+          <div className="flex items-center gap-4">
+            {/* Hamburger for mobile */}
+            <button
+              className="md:hidden text-[#0F3D3E] text-2xl"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              ☰
+            </button>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-
-          {/* Form Card */}
-          <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border">
-
-            <form onSubmit={handleAdd} className="space-y-6">
-
-              {/* Type Toggle */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Transaction Type
-                </label>
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setType("expense");
-                      setCategory("");
-                      setIsOtherCategory(false);
-                    }}
-                    className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-                      type === "expense"
-                        ? "bg-white shadow text-gray-800"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    Expense
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setType("income");
-                      setCategory("");
-                    }}
-                    className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-                      type === "income"
-                        ? "bg-white shadow text-gray-800"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    Income
-                  </button>
-                </div>
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Category
-                </label>
-
-                {type === "income" ? (
-                  <input
-                    type="text"
-                    placeholder="e.g., Salary"
-                    className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    required
-                  />
-                ) : (
-                  <>
-                    {!isOtherCategory ? (
-                      <select
-                        className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        value={category}
-                        onChange={(e) => {
-                          if (e.target.value === "other") {
-                            setIsOtherCategory(true);
-                            setCategory("");
-                          } else {
-                            setCategory(e.target.value);
-                          }
-                        }}
-                        required
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                        <option value="other">Other</option>
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        placeholder="Enter new category"
-                        className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* Amount */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Amount
-                </label>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={amount}
-                  onChange={(e) => setAmount(Number(e.target.value))}
-                  required
-                />
-              </div>
-
-              {/* Note */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Notes (Optional)
-                </label>
-                <textarea
-                  rows={3}
-                  maxLength={200}
-                  placeholder="Add additional details..."
-                  className="w-full border text-gray-500 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-[#F4A261]  text-sm shadow-sm hover:opacity-90 text-white py-3 rounded-xl font-medium transition"
-                >
-                  {loading ? "Adding..." : "Add Transaction"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => router.push("/dashboard")}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-medium transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <h2 className="text-2xl font-semibold text-[#0F3D3E] tracking-tight">
+              Add Transaction
+            </h2>
           </div>
+        </header>
 
-          {/* Recent Transactions */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Recent Transactions
-            </h3>
+        <main className="p-6 md:p-10 flex-1">
 
-            <div className="space-y-3 text-sm">
-              {recentTransactions.map((tx) => (
-                <div
-                  key={tx.id}
-                  className="flex justify-between items-center border-b pb-2"
-                >
-                  <div>
-                    <p className="font-medium text-gray-700">
-                      {tx.category}
-                    </p>
-                    <p className="text-gray-400 text-xs">
-                      {tx.type}
+          <div className="grid lg:grid-cols-3 gap-8">
+
+            {/* Form Card */}
+            <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border">
+
+              <form onSubmit={handleAdd} className="space-y-6">
+                {/* Transaction Type, Category, Amount, Note */}
+                {/* ...keep your existing form fields here... */}
+              </form>
+            </div>
+
+            {/* Recent Transactions */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Recent Transactions
+              </h3>
+
+              <div className="space-y-3 text-sm">
+                {recentTransactions.map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="flex justify-between items-center border-b pb-2"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-700">{tx.category}</p>
+                      <p className="text-gray-400 text-xs">{tx.type}</p>
+                    </div>
+                    <p
+                      className={`font-semibold ${
+                        tx.type === "income" ? "text-green-600" : "text-red-500"
+                      }`}
+                    >
+                      ₹ {tx.amount}
                     </p>
                   </div>
-                  <p
-                    className={`font-semibold ${
-                      tx.type === "income"
-                        ? "text-green-600"
-                        : "text-red-500"
-                    }`}
-                  >
-                    ₹ {tx.amount}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
