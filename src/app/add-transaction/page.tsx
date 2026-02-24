@@ -5,12 +5,12 @@ import { auth, db } from "@/lib/firebase";
 import Sidebar from "../components/Dashboard/Sidebar";
 import {
   collection,
-  getDocs,
   addDoc,
   serverTimestamp,
   query,
   orderBy,
   limit,
+  onSnapshot, // ✅ added
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -31,37 +31,41 @@ export default function AddTransaction() {
     const fetchCategories = async () => {
       if (!auth.currentUser || type === "income") return;
 
-      const snapshot = await getDocs(
-        collection(db, "users", auth.currentUser.uid, "budgets")
+      const snapshot = await onSnapshot(
+        collection(db, "users", auth.currentUser.uid, "budgets"),
+        (snapshot) => {
+          const cats = snapshot.docs.map(
+            (doc) => doc.data().category as string
+          );
+          setCategories(cats);
+        }
       );
 
-      const cats = snapshot.docs.map((doc) => doc.data().category as string);
-      setCategories(cats);
+      return () => snapshot();
     };
 
     fetchCategories();
   }, [type]);
 
-  // Fetch recent transactions
+  // ✅ Real-time recent transactions listener
   useEffect(() => {
-    const fetchRecent = async () => {
-      if (!auth.currentUser) return;
+    if (!auth.currentUser) return;
 
-      const q = query(
-        collection(db, "users", auth.currentUser.uid, "transactions"),
-        orderBy("createdAt", "desc"),
-        limit(5)
-      );
+    const q = query(
+      collection(db, "users", auth.currentUser.uid, "transactions"),
+      orderBy("createdAt", "desc"),
+      limit(5)
+    );
 
-      const snapshot = await getDocs(q);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setRecentTransactions(data);
-    };
+    });
 
-    fetchRecent();
+    return () => unsubscribe();
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -71,6 +75,7 @@ export default function AddTransaction() {
 
     try {
       setLoading(true);
+
       await addDoc(
         collection(db, "users", auth.currentUser.uid, "transactions"),
         {
@@ -82,6 +87,13 @@ export default function AddTransaction() {
           createdAt: serverTimestamp(),
         }
       );
+
+      // ✅ Reset form after success
+      setCategory("");
+      setAmount(0);
+      setNote("");
+      setIsOtherCategory(false);
+      setType("expense");
 
       alert("Transaction added successfully!");
     } catch (error: any) {
@@ -105,7 +117,6 @@ export default function AddTransaction() {
           mobileMenuOpen ? "visible" : "invisible"
         }`}
       >
-        {/* Overlay */}
         <div
           className={`absolute inset-0 bg-black/40 transition-opacity ${
             mobileMenuOpen ? "opacity-100" : "opacity-0"
@@ -113,7 +124,6 @@ export default function AddTransaction() {
           onClick={() => setMobileMenuOpen(false)}
         />
 
-        {/* Drawer */}
         <div
           className={`absolute left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ${
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
@@ -129,7 +139,6 @@ export default function AddTransaction() {
         {/* Header */}
         <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center md:px-10 lg:px-12">
           <div className="flex items-center gap-4">
-            {/* Hamburger for mobile */}
             <button
               className="md:hidden text-[#0F3D3E] text-2xl"
               onClick={() => setMobileMenuOpen(true)}
@@ -144,15 +153,13 @@ export default function AddTransaction() {
         </header>
 
         <main className="p-6 md:p-10 flex-1">
-
           <div className="grid lg:grid-cols-3 gap-8">
 
             {/* Form Card */}
             <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border">
               <form onSubmit={handleAdd} className="space-y-6">
-                {/* Transaction Type, Category, Amount, Note */}
-                {/* ...keep your existing form fields here... */}
-                {/* Type Toggle */}
+
+                {/* Transaction Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-2">
                     Transaction Type
@@ -230,7 +237,6 @@ export default function AddTransaction() {
                             ))}
                             <option value="other">Other</option>
                           </select>
-                          {/* Down arrow */}
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                             ▼
                           </span>
@@ -260,7 +266,7 @@ export default function AddTransaction() {
                     step="0.01"
                     placeholder="0.00"
                     className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    value={amount}
+                    value={amount === 0 ? "" : amount}
                     onChange={(e) => setAmount(Number(e.target.value))}
                     required
                   />
@@ -286,7 +292,7 @@ export default function AddTransaction() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-[#F4A261]  text-sm shadow-sm hover:opacity-90 text-white py-3 rounded-xl font-medium transition"
+                    className="flex-1 bg-[#F4A261] text-sm shadow-sm hover:opacity-90 text-white py-3 rounded-xl font-medium transition"
                   >
                     {loading ? "Adding..." : "Add Transaction"}
                   </button>
@@ -310,26 +316,37 @@ export default function AddTransaction() {
               </h3>
 
               <div className="space-y-3 text-sm">
-                {recentTransactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex justify-between items-center border-b pb-2"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-700">{tx.category}</p>
-                      <p className="text-gray-400 text-xs">{tx.type}</p>
-                    </div>
-                    <p
-                      className={`font-semibold ${
-                        tx.type === "income" ? "text-green-600" : "text-red-500"
-                      }`}
+                {recentTransactions.length === 0 ? (
+                  <p className="text-gray-400 text-sm">
+                    No transactions yet.
+                  </p>
+                ) : (
+                  recentTransactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="flex justify-between items-center border-b pb-2"
                     >
-                      ₹ {tx.amount}
-                    </p>
-                  </div>
-                ))}
+                      <div>
+                        <p className="font-medium text-gray-700">
+                          {tx.category}
+                        </p>
+                        <p className="text-gray-400 text-xs">{tx.type}</p>
+                      </div>
+                      <p
+                        className={`font-semibold ${
+                          tx.type === "income"
+                            ? "text-green-600"
+                            : "text-red-500"
+                        }`}
+                      >
+                        ₹ {tx.amount}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
+
           </div>
         </main>
       </div>
