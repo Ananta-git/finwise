@@ -10,11 +10,13 @@ import {
   query,
   orderBy,
   limit,
-  onSnapshot, // ✅ added
+  onSnapshot,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export default function AddTransaction() {
+  const [user, setUser] = useState<User | null>(null);
   const [type, setType] = useState<"income" | "expense">("expense");
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState<number>(0);
@@ -26,33 +28,36 @@ export default function AddTransaction() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
+  // Listen to Firebase auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Fetch budget categories (Expense only)
   useEffect(() => {
-    const fetchCategories = async () => {
-      if (!auth.currentUser || type === "income") return;
+    if (!user || type === "income") return;
 
-      const snapshot = await onSnapshot(
-        collection(db, "users", auth.currentUser.uid, "budgets"),
-        (snapshot) => {
-          const cats = snapshot.docs.map(
-            (doc) => doc.data().category as string
-          );
-          setCategories(cats);
-        }
-      );
+    const unsubscribe = onSnapshot(
+      collection(db, "users", user.uid, "budgets"),
+      (snapshot) => {
+        const cats = snapshot.docs.map((doc) => doc.data().category as string);
+        setCategories(cats);
+      }
+    );
 
-      return () => snapshot();
-    };
+    return () => unsubscribe();
+  }, [user, type]);
 
-    fetchCategories();
-  }, [type]);
-
-  // ✅ Real-time recent transactions listener
+  // Real-time recent transactions listener
   useEffect(() => {
-    if (!auth.currentUser) return;
+    if (!user) return;
 
     const q = query(
-      collection(db, "users", auth.currentUser.uid, "transactions"),
+      collection(db, "users", user.uid, "transactions"),
       orderBy("createdAt", "desc"),
       limit(5)
     );
@@ -66,29 +71,26 @@ export default function AddTransaction() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser) return alert("User not logged in");
+    if (!user) return alert("User not logged in");
     if (!category) return alert("Please enter or select a category");
 
     try {
       setLoading(true);
 
-      await addDoc(
-        collection(db, "users", auth.currentUser.uid, "transactions"),
-        {
-          type,
-          category,
-          amount,
-          note,
-          date: serverTimestamp(),
-          createdAt: serverTimestamp(),
-        }
-      );
+      await addDoc(collection(db, "users", user.uid, "transactions"), {
+        type,
+        category,
+        amount,
+        note,
+        date: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      });
 
-      // ✅ Reset form after success
+      // Reset form
       setCategory("");
       setAmount(0);
       setNote("");
@@ -123,7 +125,6 @@ export default function AddTransaction() {
           }`}
           onClick={() => setMobileMenuOpen(false)}
         />
-
         <div
           className={`absolute left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ${
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
@@ -145,7 +146,6 @@ export default function AddTransaction() {
             >
               ☰
             </button>
-
             <h2 className="text-2xl font-semibold text-[#0F3D3E] tracking-tight">
               Add Transaction
             </h2>
@@ -202,7 +202,6 @@ export default function AddTransaction() {
                   <label className="block text-sm font-medium text-gray-600 mb-2">
                     Category
                   </label>
-
                   {type === "income" ? (
                     <input
                       type="text"
@@ -296,7 +295,6 @@ export default function AddTransaction() {
                   >
                     {loading ? "Adding..." : "Add Transaction"}
                   </button>
-
                   <button
                     type="button"
                     onClick={() => router.push("/dashboard")}
@@ -314,12 +312,9 @@ export default function AddTransaction() {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Recent Transactions
               </h3>
-
               <div className="space-y-3 text-sm">
                 {recentTransactions.length === 0 ? (
-                  <p className="text-gray-400 text-sm">
-                    No transactions yet.
-                  </p>
+                  <p className="text-gray-400 text-sm">No transactions yet.</p>
                 ) : (
                   recentTransactions.map((tx) => (
                     <div
@@ -327,16 +322,12 @@ export default function AddTransaction() {
                       className="flex justify-between items-center border-b pb-2"
                     >
                       <div>
-                        <p className="font-medium text-gray-700">
-                          {tx.category}
-                        </p>
+                        <p className="font-medium text-gray-700">{tx.category}</p>
                         <p className="text-gray-400 text-xs">{tx.type}</p>
                       </div>
                       <p
                         className={`font-semibold ${
-                          tx.type === "income"
-                            ? "text-green-600"
-                            : "text-red-500"
+                          tx.type === "income" ? "text-green-600" : "text-red-500"
                         }`}
                       >
                         Rs {tx.amount}
