@@ -150,10 +150,151 @@ export default function AddTransaction() {
 
             {/* Form Card */}
             <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border">
-
               <form onSubmit={handleAdd} className="space-y-6">
                 {/* Transaction Type, Category, Amount, Note */}
                 {/* ...keep your existing form fields here... */}
+                {/* Type Toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Transaction Type
+                  </label>
+                  <div className="flex bg-gray-100 rounded-lg p-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setType("expense");
+                        setCategory("");
+                        setIsOtherCategory(false);
+                      }}
+                      className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
+                        type === "expense"
+                          ? "bg-white shadow text-gray-800"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      Expense
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setType("income");
+                        setCategory("");
+                      }}
+                      className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
+                        type === "income"
+                          ? "bg-white shadow text-gray-800"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      Income
+                    </button>
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Category
+                  </label>
+
+                  {type === "income" ? (
+                    <input
+                      type="text"
+                      placeholder="e.g., Salary"
+                      className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <>
+                      {!isOtherCategory ? (
+                        <select
+                          className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          value={category}
+                          onChange={(e) => {
+                            if (e.target.value === "other") {
+                              setIsOtherCategory(true);
+                              setCategory("");
+                            } else {
+                              setCategory(e.target.value);
+                            }
+                          }}
+                          required
+                        >
+                          <option value="">Select Category</option>
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                          <option value="other">Other</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Enter new category"
+                          className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          required
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Amount
+                  </label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0.00"
+                    className="w-full text-gray-500 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    value={amount}
+                    onChange={(e) => setAmount(Number(e.target.value))}
+                    required
+                  />
+                </div>
+
+                {/* Note */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    maxLength={200}
+                    placeholder="Add additional details..."
+                    className="w-full border text-gray-500 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-[#F4A261]  text-sm shadow-sm hover:opacity-90 text-white py-3 rounded-xl font-medium transition"
+                  >
+                    {loading ? "Adding..." : "Add Transaction"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => router.push("/dashboard")}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-medium transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
               </form>
             </div>
 
