@@ -1,61 +1,384 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth, db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  deleteDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import Sidebar from "../components/Dashboard/Sidebar";
 import { useRouter } from "next/navigation";
+import { Bar, Pie } from "react-chartjs-2";
+import { toast, Toaster } from "react-hot-toast";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+interface Budget {
+  id: string;
+  category: string;
+  monthlyLimit: number;
+  spent?: number;
+  month: number;
+  year: number;
+  createdAt?: any; // Firestore Timestamp
+}
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
 export default function BudgetPage() {
   const [category, setCategory] = useState("");
   const [monthlyLimit, setMonthlyLimit] = useState("");
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ category?: string; monthlyLimit?: string }>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const router = useRouter();
 
+  // Fetch budgets filtered by month/year
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    const fetchBudgets = async () => {
+      const q = query(
+        collection(db, "users", auth.currentUser!.uid, "budgets"),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
+      
+      const data: Budget[] = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Budget, "id">) })) // <-- cast here
+        .filter((b) => b.month === month && b.year === year);
+      
+      setBudgets(data);
+    };
+
+    fetchBudgets();
+  }, [month, year]);
+
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    if (!category) newErrors.category = "Category is required";
+    if (!monthlyLimit || Number(monthlyLimit) <= 0)
+      newErrors.monthlyLimit = "Monthly limit must be greater than 0";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleAddBudget = async () => {
+    if (!validateForm()) return;
+
     if (!auth.currentUser) return;
 
     try {
-      await addDoc(
-        collection(db, "users", auth.currentUser.uid, "budgets"),
-        {
-          category,
-          monthlyLimit: Number(monthlyLimit),
-          month: new Date().getMonth() + 1,
-          year: new Date().getFullYear(),
-          createdAt: new Date(),
-        }
-      );
+      setLoading(true);
+      await addDoc(collection(db, "users", auth.currentUser.uid, "budgets"), {
+        category,
+        monthlyLimit: Number(monthlyLimit),
+        month,
+        year,
+        spent: 0,
+        createdAt: serverTimestamp(),
+      });
 
-      alert("Budget added successfully!");
-      router.push("/dashboard");
-    } catch (error) {
-      console.error(error);
+      setCategory("");
+      setMonthlyLimit("");
+      toast.success("Budget added successfully!");
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleDeleteBudget = async (id: string) => {
+    if (!auth.currentUser) return;
+    try {
+      await deleteDoc(doc(db, "users", auth.currentUser.uid, "budgets", id));
+      setBudgets(budgets.filter((b) => b.id !== id));
+      toast.success("Budget deleted successfully!");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  // Chart Data
+  const barData = {
+    labels: budgets.map((b) => b.category),
+    datasets: [
+      {
+        label: "Budget",
+        data: budgets.map((b) => b.monthlyLimit),
+        backgroundColor: "#2563EB",
+      },
+      {
+        label: "Spent",
+        data: budgets.map((b) => b.spent || 0),
+        backgroundColor: "#DC2626",
+      },
+    ],
+  };
+
+  const pieData = {
+    labels: budgets.map((b) => b.category),
+    datasets: [
+      {
+        label: "Budget Distribution",
+        data: budgets.map((b) => b.monthlyLimit),
+        backgroundColor: ["#2563EB", "#FBBF24", "#16A34A", "#F4A261", "#DC2626"],
+      },
+    ],
+  };
+
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Set Monthly Budget</h1>
+    <div className="min-h-screen bg-[#F9FAFB] flex relative">
+      <Toaster position="top-right" />
 
-      <input
-        type="text"
-        placeholder="Category (e.g. Food)"
-        className="border p-2 w-full mb-3 rounded"
-        onChange={(e) => setCategory(e.target.value)}
-      />
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Monthly Limit"
-        className="border p-2 w-full mb-3 rounded"
-        onChange={(e) => setMonthlyLimit(e.target.value)}
-      />
-
-      <button
-        onClick={handleAddBudget}
-        className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition ${
+          mobileMenuOpen ? "visible" : "invisible"
+        }`}
       >
-        Save Budget
-      </button>
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity ${
+            mobileMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <div
+          className={`absolute left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ${
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <Sidebar />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col w-full">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center md:px-10 lg:px-12">
+          <div className="flex items-center gap-4">
+            <button
+              className="md:hidden text-[#0F3D3E] text-2xl"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              ☰
+            </button>
+            <h2 className="text-2xl font-semibold text-[#0F3D3E] tracking-tight">
+              Budget Management
+            </h2>
+          </div>
+        </header>
+
+        <main className="p-6 md:p-10 flex-1">
+          {/* Month / Year Filter */}
+          <div className="flex gap-4 mb-6 items-center">
+            <select
+              className="border px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={month}
+              onChange={(e) => setMonth(Number(e.target.value))}
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(0, i).toLocaleString("default", { month: "long" })}
+                </option>
+              ))}
+            </select>
+            <select
+              className="border px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+            >
+              {[2023, 2024, 2025].map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-2xl shadow border">
+              <p className="text-sm text-gray-500">Total Budget</p>
+              <p className="text-2xl font-bold text-[#2563EB]">
+                ₹ {budgets.reduce((a, b) => a + b.monthlyLimit, 0)}
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow border">
+              <p className="text-sm text-gray-500">Total Spent</p>
+              <p className="text-2xl font-bold text-[#DC2626]">
+                ₹ {budgets.reduce((a, b) => a + (b.spent || 0), 0)}
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow border">
+              <p className="text-sm text-gray-500">Remaining Budget</p>
+              <p className="text-2xl font-bold text-[#16A34A]">
+                ₹ {budgets.reduce((a, b) => a + b.monthlyLimit - (b.spent || 0), 0)}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Add Budget Form */}
+            <div className="lg:col-span-1 bg-white p-8 rounded-2xl shadow border">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Budget</h3>
+              <div className="space-y-4">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Category (e.g., Food)"
+                    className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:outline-none ${
+                      errors.category ? "border-red-500 ring-red-500" : "focus:ring-blue-500"
+                    }`}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  />
+                  {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+                </div>
+
+                <div>
+                  <input
+                    type="number"
+                    placeholder="Monthly Limit"
+                    className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:outline-none ${
+                      errors.monthlyLimit ? "border-red-500 ring-red-500" : "focus:ring-blue-500"
+                    }`}
+                    value={monthlyLimit}
+                    onChange={(e) => setMonthlyLimit(e.target.value)}
+                  />
+                  {errors.monthlyLimit && (
+                    <p className="text-red-500 text-sm mt-1">{errors.monthlyLimit}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-4 pt-2">
+                  <button
+                    onClick={handleAddBudget}
+                    disabled={loading}
+                    className="flex-1 bg-[#F4A261] text-white py-3 rounded-xl font-medium hover:opacity-90 transition"
+                  >
+                    {loading ? "Adding..." : "Add Budget"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategory("");
+                      setMonthlyLimit("");
+                      setErrors({});
+                    }}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-medium transition"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Budget List Table */}
+            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow border">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget List</h3>
+              {budgets.length === 0 ? (
+                <p className="text-gray-400 text-sm">No budgets set yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="p-3 border-b text-sm text-gray-500">Category</th>
+                        <th className="p-3 border-b text-sm text-gray-500">Monthly Limit</th>
+                        <th className="p-3 border-b text-sm text-gray-500">Spent</th>
+                        <th className="p-3 border-b text-sm text-gray-500">Remaining</th>
+                        <th className="p-3 border-b text-sm text-gray-500">Progress</th>
+                        <th className="p-3 border-b text-sm text-gray-500">Updated</th>
+                        <th className="p-3 border-b text-sm text-gray-500">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {budgets.map((b) => {
+                        const remaining = b.monthlyLimit - (b.spent || 0);
+                        const percent = Math.min(
+                          100,
+                          ((b.spent || 0) / b.monthlyLimit) * 100
+                        );
+                        const progressColor =
+                          percent < 80 ? "#16A34A" : percent <= 100 ? "#FBBF24" : "#DC2626";
+                        return (
+                          <tr key={b.id}>
+                            <td className="p-3 border-b">{b.category}</td>
+                            <td className="p-3 border-b">₹ {b.monthlyLimit}</td>
+                            <td className="p-3 border-b">₹ {b.spent || 0}</td>
+                            <td className="p-3 border-b">₹ {remaining}</td>
+                            <td className="p-3 border-b">
+                              <div className="w-full bg-gray-200 rounded-full h-3">
+                                <div
+                                  className="h-3 rounded-full transition-all duration-300"
+                                  style={{ width: `${percent}%`, backgroundColor: progressColor }}
+                                />
+                              </div>
+                            </td>
+                            <td className="p-3 border-b text-sm text-gray-400">
+                              {b.createdAt?.toDate
+                                ? b.createdAt.toDate().toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="p-3 border-b flex gap-2">
+                              <button
+                                onClick={() => handleDeleteBudget(b.id)}
+                                className="text-red-500 hover:underline text-sm"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Charts */}
+          {budgets.length > 0 && (
+            <div className="grid lg:grid-cols-2 gap-6 mt-8">
+              <div className="bg-white p-6 rounded-2xl shadow border">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget vs Spent</h3>
+                <Bar data={barData} options={{ responsive: true }} />
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow border">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget Distribution</h3>
+                <Pie data={pieData} options={{ responsive: true }} />
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
