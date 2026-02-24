@@ -24,14 +24,14 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 px-6 py-8 flex lg:flex flex-col">
+    <aside className="w-64 h-screen bg-white border-r border-gray-200 px-6 py-8 flex flex-col">
       {/* Logo */}
       <h2 className="text-2xl font-bold text-[#0F3D3E] tracking-tight mb-12">
         FinWise
       </h2>
 
       {/* Navigation */}
-      <nav className="space-y-3">
+      <nav className="space-y-3 flex-1">
         {navItems.map((item, i) => {
           const isActive = pathname === item.path;
           const Icon = item.icon;
