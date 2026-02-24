@@ -198,7 +198,7 @@ export default function BudgetPage() {
           {/* Month / Year Filter */}
           <div className="flex gap-4 mb-6 items-center">
             <select
-              className="border px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="border border-gray-300 px-4 py-2 rounded-xl text-gray-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
@@ -208,8 +208,9 @@ export default function BudgetPage() {
                 </option>
               ))}
             </select>
+
             <select
-              className="border px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="border border-gray-300 px-4 py-2 rounded-xl text-gray-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
