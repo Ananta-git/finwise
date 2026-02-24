@@ -10,7 +10,7 @@ import {
   doc,
   deleteDoc,
   serverTimestamp,
-  onSnapshot,   
+  onSnapshot,
 } from "firebase/firestore";
 import Sidebar from "../components/Dashboard/Sidebar";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,7 @@ interface Budget {
   spent?: number;
   month: number;
   year: number;
-  createdAt?: any; // Firestore Timestamp
+  createdAt?: any;
 }
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
@@ -52,32 +52,22 @@ export default function BudgetPage() {
 
   const router = useRouter();
 
-  const filteredBudgets = budgets.filter(
-    (b) => b.month === month && b.year === year
-  );
+  const filteredBudgets = budgets.filter((b) => b.month === month && b.year === year);
 
   const calculatedBudgets = filteredBudgets.map((budget) => {
     const spent = transactions.reduce((sum, t) => {
       if (t.type !== "expense") return sum;
       if (t.category !== budget.category) return sum;
       if (!t.date?.toDate) return sum;
-
       const txnDate = t.date.toDate();
-
-      if (
-        txnDate.getMonth() + 1 === month &&
-        txnDate.getFullYear() === year
-      ) {
+      if (txnDate.getMonth() + 1 === month && txnDate.getFullYear() === year) {
         return sum + Number(t.amount || 0);
       }
-
       return sum;
     }, 0);
-
     return { ...budget, spent };
   });
 
-  // Fetch budgets filtered by month/year
   useEffect(() => {
     let unsubscribeBudgets: any;
     let unsubscribeTransactions: any;
@@ -126,7 +116,6 @@ export default function BudgetPage() {
 
   const handleAddBudget = async () => {
     if (!validateForm()) return;
-
     if (!auth.currentUser) return;
 
     try {
@@ -138,7 +127,6 @@ export default function BudgetPage() {
         year,
         createdAt: serverTimestamp(),
       });
-
       setCategory("");
       setMonthlyLimit("");
       toast.success("Budget added successfully!");
@@ -160,61 +148,38 @@ export default function BudgetPage() {
     }
   };
 
-  // Chart Data
-    const barData = {
-      labels: calculatedBudgets.map((b) => b.category),
-      datasets: [
-        {
-          label: "Budget",
-          data: calculatedBudgets.map((b) => b.monthlyLimit),
-          backgroundColor: "#2563EB",
-        },
-        {
-          label: "Spent",
-          data: calculatedBudgets.map((b) => b.spent || 0),
-          backgroundColor: "#DC2626",
-        },
-      ],
-    };
+  const barData = {
+    labels: calculatedBudgets.map((b) => b.category),
+    datasets: [
+      { label: "Budget", data: calculatedBudgets.map((b) => b.monthlyLimit), backgroundColor: "#2563EB" },
+      { label: "Spent", data: calculatedBudgets.map((b) => b.spent || 0), backgroundColor: "#DC2626" },
+    ],
+  };
 
-    const pieData = {
-      labels: calculatedBudgets.map((b) => b.category),
-      datasets: [
-        {
-          label: "Budget Distribution",
-          data: calculatedBudgets.map((b) => b.monthlyLimit),
-          backgroundColor: ["#2563EB", "#FBBF24", "#16A34A", "#F4A261", "#DC2626"],
-        },
-      ],
-    };
+  const pieData = {
+    labels: calculatedBudgets.map((b) => b.category),
+    datasets: [
+      {
+        label: "Budget Distribution",
+        data: calculatedBudgets.map((b) => b.monthlyLimit),
+        backgroundColor: ["#2563EB", "#FBBF24", "#16A34A", "#F4A261", "#DC2626"],
+      },
+    ],
+  };
 
-    //For latest date calculation in dropdown
-    const currentYear = new Date().getFullYear();
-
-    const transactionYears = transactions
-      .filter((t) => t.date?.toDate)
-      .map((t) => t.date.toDate().getFullYear());
-
-    const budgetYears = budgets.map((b) => b.year);
-
-    const allYears = [...transactionYears, ...budgetYears];
-
-    const startYear =
-      allYears.length > 0
-        ? Math.min(...allYears)
-        : currentYear;
-
-    const years = Array.from(
-      { length: currentYear - startYear + 1 },
-      (_, i) => startYear + i
-    );
+  const currentYear = new Date().getFullYear();
+  const transactionYears = transactions.filter((t) => t.date?.toDate).map((t) => t.date.toDate().getFullYear());
+  const budgetYears = budgets.map((b) => b.year);
+  const allYears = [...transactionYears, ...budgetYears];
+  const startYear = allYears.length > 0 ? Math.min(...allYears) : currentYear;
+  const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex relative">
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col md:flex-row relative">
       <Toaster position="top-right" />
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:block md:w-64">
         <Sidebar />
       </div>
 
@@ -225,9 +190,7 @@ export default function BudgetPage() {
         }`}
       >
         <div
-          className={`absolute inset-0 bg-black/40 transition-opacity ${
-            mobileMenuOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/40 transition-opacity ${mobileMenuOpen ? "opacity-100" : "opacity-0"}`}
           onClick={() => setMobileMenuOpen(false)}
         />
         <div
@@ -241,26 +204,22 @@ export default function BudgetPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center md:px-10 lg:px-12">
+        <header className="bg-white border-b border-gray-100 px-4 py-4 flex justify-between items-center md:px-10 lg:px-12">
           <div className="flex items-center gap-4">
-            <button
-              className="md:hidden text-[#0F3D3E] text-2xl"
-              onClick={() => setMobileMenuOpen(true)}
-            >
+            <button className="md:hidden text-[#0F3D3E] text-2xl" onClick={() => setMobileMenuOpen(true)}>
               ☰
             </button>
-            <h2 className="text-2xl font-semibold text-[#0F3D3E] tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#0F3D3E] tracking-tight">
               Budget Management
             </h2>
           </div>
         </header>
 
-        <main className="p-6 md:p-10 flex-1">
+        <main className="p-4 sm:p-6 md:p-10 flex-1">
           {/* Month / Year Filter */}
-          <div className="flex gap-4 mb-6 items-center">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center">
             <select
-              className="border border-gray-300 px-4 py-2 rounded-xl text-gray-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="border border-gray-300 px-4 py-2 rounded-xl text-gray-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition w-full sm:w-auto"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
@@ -272,7 +231,7 @@ export default function BudgetPage() {
             </select>
 
             <select
-              className="border border-gray-300 px-4 py-2 rounded-xl text-gray-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="border border-gray-300 px-4 py-2 rounded-xl text-gray-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition w-full sm:w-auto"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
@@ -285,20 +244,20 @@ export default function BudgetPage() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-2xl shadow border">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
               <p className="text-sm text-gray-500">Total Budget</p>
               <p className="text-2xl font-bold text-[#2563EB]">
                 Rs {calculatedBudgets.reduce((a, b) => a + b.monthlyLimit, 0)}
               </p>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow border">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
               <p className="text-sm text-gray-500">Total Spent</p>
               <p className="text-2xl font-bold text-[#DC2626]">
                 Rs {calculatedBudgets.reduce((a, b) => a + (b.spent || 0), 0)}
               </p>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow border">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
               <p className="text-sm text-gray-500">Remaining Budget</p>
               <p className="text-2xl font-bold text-[#16A34A]">
                 Rs {calculatedBudgets.reduce((a, b) => a + b.monthlyLimit - (b.spent || 0), 0)}
@@ -306,61 +265,45 @@ export default function BudgetPage() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          {/* Form + Table */}
+          <div className="flex flex-col lg:flex-row gap-6">
             {/* Add Budget Form */}
-            <div className="lg:col-span-1 bg-white p-8 rounded-2xl shadow-md border">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">
-                Add Budget
-              </h3>
-              <div className="space-y-5">
-                {/* Category */}
+            <div className="lg:w-1/3 bg-white p-6 sm:p-8 rounded-2xl shadow-md border">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6 tracking-tight">Add Budget</h3>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                   <input
                     type="text"
                     placeholder="e.g., Food"
-                    className={`w-full border rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
-                      errors.category
-                        ? "border-red-500 ring-red-500"
-                        : "focus:ring-blue-500 border-gray-300"
+                    className={`w-full border rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
+                      errors.category ? "border-red-500 ring-red-500" : "focus:ring-blue-500 border-gray-300"
                     }`}
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                   />
-                  {errors.category && (
-                    <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-                  )}
+                  {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
                 </div>
 
-                {/* Monthly Limit */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Monthly Limit
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Limit</label>
                   <input
                     type="number"
                     placeholder="Rs 0.00"
-                    className={`w-full border rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
-                      errors.monthlyLimit
-                        ? "border-red-500 ring-red-500"
-                        : "focus:ring-blue-500 border-gray-300"
+                    className={`w-full border rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-gray-900 placeholder-gray-400 text-base focus:ring-2 focus:outline-none transition ${
+                      errors.monthlyLimit ? "border-red-500 ring-red-500" : "focus:ring-blue-500 border-gray-300"
                     }`}
                     value={monthlyLimit}
                     onChange={(e) => setMonthlyLimit(e.target.value)}
                   />
-                  {errors.monthlyLimit && (
-                    <p className="text-red-500 text-sm mt-1">{errors.monthlyLimit}</p>
-                  )}
+                  {errors.monthlyLimit && <p className="text-red-500 text-sm mt-1">{errors.monthlyLimit}</p>}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-4 pt-3">
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button
                     onClick={handleAddBudget}
                     disabled={loading}
-                    className="flex-1 bg-[#F4A261] text-white py-3 rounded-xl font-medium hover:bg-[#e3934b] shadow-md transition text-base"
+                    className="flex-1 bg-[#F4A261] text-white py-2 sm:py-3 rounded-xl font-medium hover:bg-[#e3934b] shadow-md transition text-base"
                   >
                     {loading ? "Adding..." : "Add Budget"}
                   </button>
@@ -371,7 +314,7 @@ export default function BudgetPage() {
                       setMonthlyLimit("");
                       setErrors({});
                     }}
-                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium shadow-sm transition text-base"
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 sm:py-3 rounded-xl font-medium shadow-sm transition text-base"
                   >
                     Reset
                   </button>
@@ -380,99 +323,74 @@ export default function BudgetPage() {
             </div>
 
             {/* Budget List Table */}
-            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md border">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">
-                Budget List
-              </h3>
-
+            <div className="lg:w-2/3 bg-white p-4 sm:p-6 rounded-2xl shadow-md border overflow-x-auto">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 tracking-tight">Budget List</h3>
               {calculatedBudgets.length === 0 ? (
                 <p className="text-gray-400 text-base">No budgets set yet.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Category</th>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Monthly Limit</th>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Spent</th>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Remaining</th>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Progress</th>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Updated</th>
-                        <th className="p-3 border-b text-sm font-medium text-gray-700">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calculatedBudgets.map((b, idx) => {
-                        const remaining = b.monthlyLimit - (b.spent || 0);
-                        const percent = Math.min(
-                          100,
-                          ((b.spent || 0) / b.monthlyLimit) * 100
-                        );
-                      const progressColor =
-                        percent < 80
-                          ? "#16A34A"   // green
-                          : percent <= 100
-                          ? "#FBBF24"   // yellow
-                          : "#DC2626";  // red
-                        const rowBg = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
+                <table className="min-w-full text-left border-collapse">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Category</th>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Monthly Limit</th>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Spent</th>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Remaining</th>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Progress</th>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Updated</th>
+                      <th className="p-2 sm:p-3 border-b text-sm sm:text-base font-medium text-gray-700">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calculatedBudgets.map((b, idx) => {
+                      const remaining = b.monthlyLimit - (b.spent || 0);
+                      const percent = Math.min(100, ((b.spent || 0) / b.monthlyLimit) * 100);
+                      const progressColor = percent < 80 ? "#16A34A" : percent <= 100 ? "#FBBF24" : "#DC2626";
+                      const rowBg = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
 
-                        return (
-                          <tr
-                            key={b.id}
-                            className={`${rowBg} hover:bg-gray-100 transition-colors`}
-                          >
-                            <td className="p-3 text-gray-800 font-medium">{b.category}</td>
-                            <td className="p-3 text-[#2563EB] font-medium">Rs {b.monthlyLimit}</td>
-                            <td className="p-3 text-[#DC2626] font-medium">Rs {b.spent || 0}</td>
-                            <td
-                              className={`p-1 font-medium ${
-                                remaining < 0
-                                  ? "bg-red-100 text-red-700"  // highlight negative values
-                                  : "text-[#16A34A]"
-                              }`}
+                      return (
+                        <tr key={b.id} className={`${rowBg} hover:bg-gray-100 transition-colors`}>
+                          <td className="p-2 sm:p-3 text-gray-800 font-medium">{b.category}</td>
+                          <td className="p-2 sm:p-3 text-[#2563EB] font-medium">Rs {b.monthlyLimit}</td>
+                          <td className="p-2 sm:p-3 text-[#DC2626] font-medium">Rs {b.spent || 0}</td>
+                          <td className={`p-1 sm:p-2 font-medium ${remaining < 0 ? "bg-red-100 text-red-700" : "text-[#16A34A]"}`}>
+                            Rs {remaining}
+                          </td>
+                          <td className="p-2 sm:p-3">
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <div
+                                className="h-3 rounded-full transition-all duration-300"
+                                style={{ width: `${percent}%`, backgroundColor: progressColor }}
+                              />
+                            </div>
+                          </td>
+                          <td className="p-2 sm:p-3 text-sm text-gray-500">
+                            {b.createdAt?.toDate ? b.createdAt.toDate().toLocaleDateString() : "-"}
+                          </td>
+                          <td className="p-2 sm:p-3 flex gap-2">
+                            <button
+                              onClick={() => handleDeleteBudget(b.id)}
+                              className="text-red-500 hover:underline text-sm sm:text-base font-medium"
                             >
-                              Rs {remaining}
-                            </td>
-                            <td className="p-3">
-                              <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div
-                                  className="h-3 rounded-full transition-all duration-300"
-                                  style={{ width: `${percent}%`, backgroundColor: progressColor }}
-                                />
-                              </div>
-                            </td>
-                            <td className="p-3 text-sm text-gray-500">
-                              {b.createdAt?.toDate
-                                ? b.createdAt.toDate().toLocaleDateString()
-                                : "-"}
-                            </td>
-                            <td className="p-3 flex gap-2">
-                              <button
-                                onClick={() => handleDeleteBudget(b.id)}
-                                className="text-red-500 hover:underline text-sm font-medium"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
-
           {/* Charts */}
           {calculatedBudgets.length > 0 && (
-            <div className="grid lg:grid-cols-2 gap-6 mt-8">
-              <div className="bg-white p-6 rounded-2xl shadow border">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget vs Spent</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Budget vs Spent</h3>
                 <Bar data={barData} options={{ responsive: true }} />
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow border">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget Distribution</h3>
+              <div className="bg-white p-4 sm:p-6 rounded-2xl shadow border">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Budget Distribution</h3>
                 <Pie data={pieData} options={{ responsive: true }} />
               </div>
             </div>
