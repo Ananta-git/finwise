@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { auth, db } from "@/lib/firebase";
+import { updateDoc } from "firebase/firestore";
 import {
   collection,
   addDoc,
@@ -53,6 +54,31 @@ export default function BudgetPage() {
   const router = useRouter();
 
   const filteredBudgets = budgets.filter((b) => b.month === month && b.year === year);
+
+  //edit states
+  const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
+  const [editLimit, setEditLimit] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+
+  //dialog box
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
+
+  //update function
+  const handleUpdateBudget = async (id: string) => {
+    if (!auth.currentUser) return;
+
+    try {
+        await updateDoc(doc(db, "users", auth.currentUser.uid, "budgets", id), {
+        category: editCategory,
+        monthlyLimit: Number(editLimit),
+        });
+
+        setEditingBudgetId(null);
+    } catch (error) {
+        console.error(error);
+    }
+    };
 
   const calculatedBudgets = filteredBudgets.map((budget) => {
     const spent = transactions.reduce((sum, t) => {
@@ -138,15 +164,28 @@ export default function BudgetPage() {
     }
   };
 
-  const handleDeleteBudget = async (id: string) => {
-    if (!auth.currentUser) return;
+    const handleDeleteBudget = async () => {
+    if (!auth.currentUser || !selectedBudgetId) return;
+
     try {
-      await deleteDoc(doc(db, "users", auth.currentUser.uid, "budgets", id));
-      toast.success("Budget deleted successfully!");
+        await deleteDoc(
+        doc(
+            db,
+            "users",
+            auth.currentUser.uid,
+            "budgets",
+            selectedBudgetId
+        )
+        );
+
+        toast.success("Budget deleted successfully!");
+
+        setShowDeleteModal(false);
+        setSelectedBudgetId(null);
     } catch (error: any) {
-      toast.error(error.message);
+        toast.error(error.message);
     }
-  };
+    };
 
   const barData = {
     labels: calculatedBudgets.map((b) => b.category),
@@ -366,14 +405,65 @@ export default function BudgetPage() {
                           <td className="p-2 sm:p-3 text-sm text-gray-500">
                             {b.createdAt?.toDate ? b.createdAt.toDate().toLocaleDateString() : "-"}
                           </td>
-                          <td className="p-2 sm:p-3 flex gap-2">
-                            <button
-                              onClick={() => handleDeleteBudget(b.id)}
-                              className="text-red-500 hover:underline text-sm sm:text-base font-medium"
+                          <td className="p-2 sm:p-3">
+                            {editingBudgetId === b.id ? (
+                                <div className="flex flex-col gap-2">
+                                <input
+                                    className="border text-gray-500 bg-gray-100 px-2 py-1 rounded w-full text-sm"
+                                    value={editCategory}
+                                    onChange={(e) => setEditCategory(e.target.value)}
+                                />
+
+                                <input
+                                    type="number"
+                                    className="border text-gray-500 bg-gray-100 px-2 py-1 rounded w-full text-sm"
+                                    value={editLimit}
+                                    onChange={(e) => setEditLimit(e.target.value)}
+                                />
+
+                                <div className="flex gap-2">
+                                    <button
+                                    onClick={() => handleUpdateBudget(b.id)}
+                                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer transition-all duration-200 ease-in-out shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-98"
+                                    >
+                                    Save
+                                    </button>
+
+                                    <button
+                                    onClick={() => setEditingBudgetId(null)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer transition-all duration-200 ease-in-out shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-98"
                             >
-                              Delete
-                            </button>
-                          </td>
+                                    Cancel
+                                    </button>
+                                </div>
+                                </div>
+                            ) : (
+                                <div className="flex gap-3 items-center">
+                                {/* EDIT */}
+                                <button
+                                    onClick={() => {
+                                    setEditingBudgetId(b.id);
+                                    setEditCategory(b.category);
+                                    setEditLimit(String(b.monthlyLimit));
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800 font-bold text-md p-1 hover:bg-blue-100 rounded transition-colors cursor-pointer"
+                                >
+                                    ✏️ Edit
+                                </button>
+
+                                {/* DELETE */}
+                                <button
+                                onClick={() => {
+                                setSelectedBudgetId(b.id);
+                                setShowDeleteModal(true);
+                                }}
+                                className="text-red-600 hover:text-red-800 text-md font-bold p-1 hover:bg-red-100 rounded transition-colors cursor-pointer"
+                                >
+                                    🗑 Delete
+                                </button>
+                                </div>
+                            )}
+                            </td>
                         </tr>
                       );
                     })}
@@ -397,6 +487,47 @@ export default function BudgetPage() {
           )}
         </main>
       </div>
+      {showDeleteModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
+
+      {/* Icon */}
+      <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 mx-auto mb-4">
+        <span className="text-2xl">⚠️</span>
+      </div>
+
+      {/* Title */}
+      <h2 className="text-xl font-bold text-center text-gray-800">
+        Delete Budget
+      </h2>
+
+      {/* Message */}
+      <p className="text-gray-500 text-center mt-2">
+        This action cannot be undone.
+      </p>
+
+      {/* Buttons */}
+        <div className="flex gap-3 mt-6">
+            <button
+            onClick={() => {
+                setShowDeleteModal(false);
+                setSelectedBudgetId(null);
+            }}
+            className="flex-1 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition"
+            >
+            Cancel
+            </button>
+
+            <button
+            onClick={handleDeleteBudget}
+            className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition"
+            >
+            Delete
+            </button>
+        </div>
+        </div>
+    </div>
+    )}
     </div>
   );
 }

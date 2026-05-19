@@ -1,6 +1,10 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import {
+    getAuth,
+    setPersistence,
+    browserLocalPersistence
+ } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
@@ -16,6 +20,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export auth & db so you can use in your pages
+// Export auth so you can use in your pages
 export const auth = getAuth(app);
+
+//#Persist Firebase login session across tabs and page reloads
+setPersistence(auth, browserLocalPersistence);
+
+// Firestore database instance (used for storing app data)
 export const db = getFirestore(app);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import Sidebar from "../components/Dashboard/Sidebar";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import {
   collection,
   addDoc,
@@ -15,6 +16,15 @@ import {
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, User } from "firebase/auth";
 
+// Define a strict type for your transaction items instead of using 'any'
+interface RecentTransaction {
+  id: string;
+  type: "income" | "expense";
+  category: string;
+  amount: number;
+  note?: string;
+}
+
 export default function AddTransaction() {
   const [user, setUser] = useState<User | null>(null);
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -23,7 +33,30 @@ export default function AddTransaction() {
   const [note, setNote] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [isOtherCategory, setIsOtherCategory] = useState(false);
-  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState<number>(0);
+  const [editCategory, setEditCategory] = useState("");
+
+  //Delete
+  const handleDelete = async (id: string) => {
+    if (!user) return;
+
+    await deleteDoc(doc(db, "users", user.uid, "transactions", id));
+  };
+
+  //Edit'
+  const handleEdit = async (id: string) => {
+    if (!user) return;
+    await updateDoc(doc(db, "users", user.uid, "transactions", id), {
+        category: editCategory,
+        amount: editAmount,
+    });
+    setEditingId(null);
+    };
+
+  // Fixed: Swapped any[] for our new interface type
+  const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -66,7 +99,7 @@ export default function AddTransaction() {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }));
+      })) as RecentTransaction[]; // Typed casting cleanly explicitly handles Firestore raw objects
       setRecentTransactions(data);
     });
 
@@ -98,8 +131,13 @@ export default function AddTransaction() {
       setType("expense");
 
       alert("Transaction added successfully!");
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error) {
+      // Fixed: Removed (: any) and safely checked for standard javascript instance messages
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("An unexpected error occurred while adding data.");
+      }
     } finally {
       setLoading(false);
     }
@@ -312,30 +350,94 @@ export default function AddTransaction() {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Recent Transactions
               </h3>
-              <div className="space-y-3 text-sm">
-                {recentTransactions.length === 0 ? (
-                  <p className="text-gray-400 text-sm">No transactions yet.</p>
-                ) : (
-                  recentTransactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="flex justify-between items-center border-b pb-2"
-                    >
-                      <div>
-                        <p className="font-medium text-gray-700">{tx.category}</p>
+            <div className="space-y-3 text-sm">
+            {recentTransactions.length === 0 ? (
+                <p className="text-gray-400 text-sm">No transactions yet.</p>
+            ) : (
+                recentTransactions.map((tx) => (
+                <div
+                    key={tx.id}
+                    className="border-b pb-2 flex justify-between items-center gap-2"
+                >
+                    {/* LEFT SIDE */}
+                    <div className="flex-1">
+                    {editingId === tx.id ? (
+                        <div className="space-y-2">
+                        <input
+                            className="border text-gray-500 bg-gray-100 px-2 py-1 rounded w-full text-sm"
+                            value={editCategory}
+                            onChange={(e) => setEditCategory(e.target.value)}
+                        />
+
+                        <input
+                            type="number"
+                            className="border text-gray-500 bg-gray-100 px-2 py-1 rounded w-full text-sm"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(Number(e.target.value))}
+                        />
+
+                        <div className="flex gap-2">
+                            <button
+                            onClick={() => handleEdit(tx.id)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer transition-all duration-200 ease-in-out shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-98"
+                            >
+                            Save
+                            </button>
+
+                            <button
+                            onClick={() => setEditingId(null)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer transition-all duration-200 ease-in-out shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-98"
+                            >
+                            Cancel
+                            </button>
+                        </div>
+                        </div>
+                    ) : (
+                        <>
+                        <p className="font-medium text-gray-700">
+                            {tx.category}
+                        </p>
                         <p className="text-gray-400 text-xs">{tx.type}</p>
-                      </div>
-                      <p
-                        className={`font-semibold ${
-                          tx.type === "income" ? "text-green-600" : "text-red-500"
-                        }`}
-                      >
-                        Rs {tx.amount}
-                      </p>
+                        </>
+                    )}
                     </div>
-                  ))
-                )}
-              </div>
+
+                    {/* RIGHT SIDE */}
+                    <div className="flex items-center gap-2">
+                    <p
+                        className={`font-semibold ${
+                        tx.type === "income" ? "text-green-600" : "text-red-500"
+                        }`}
+                    >
+                        Rs {tx.amount}
+                    </p>
+
+                    {/* EDIT BUTTON */}
+                    <button
+                        onClick={() => {
+                        setEditingId(tx.id);
+                        setEditCategory(tx.category);
+                        setEditAmount(tx.amount);
+                        }}
+                        className="text-red-200 hover:text-red-400 text-md font-bold p-1 hover:bg-red-100 rounded transition-colors cursor-pointer"
+                        title="Delete"
+                    >
+                        ✏️
+                    </button>
+
+                    {/* DELETE BUTTON */}
+                    <button
+                        onClick={() => handleDelete(tx.id)}
+                        className="text-red-500 hover:text-red-400 text-xl font-bold p-1 hover:bg-red-100 rounded transition-colors cursor-pointer"
+                        title="Delete"
+                    >
+                        🗑
+                    </button>
+                    </div>
+                </div>
+                ))
+            )}
+            </div>
             </div>
 
           </div>
