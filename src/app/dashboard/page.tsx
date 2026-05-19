@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [totalExpense, setTotalExpense] = useState(0);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -98,17 +99,20 @@ export default function Dashboard() {
     setBudgets(data);
   };
 
-  useEffect(() => {
+    useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) router.push("/login");
-      else {
+        if (user) {
         fetchTransactions();
         fetchBudgets();
-      }
+        } else {
+        router.push("/login");
+        }
+
+        setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+    }, []);
 
   const expenseByCategory = Object.values(
     transactions
@@ -135,6 +139,7 @@ export default function Dashboard() {
       expenseMap[category] += t.amount;
     });
 
+    if (loading) return <div>Loading dashboard...</div>;
   return (
     <div className="flex min-h-screen bg-[#F4F7F6] relative">
 
