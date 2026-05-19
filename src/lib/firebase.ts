@@ -24,7 +24,11 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 //#Persist Firebase login session across tabs and page reloads
-setPersistence(auth, browserLocalPersistence);
-
+// ✅ Only run on client
+if (typeof window !== "undefined") {
+  setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.error("Auth persistence error:", err);
+  });
+}
 // Firestore database instance (used for storing app data)
 export const db = getFirestore(app);
