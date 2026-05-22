@@ -1,15 +1,37 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useState } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { useAuth } from "@/lib/AuthContext";
 
-export default function Home() {
-  const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false); // ✅ add this
-
+    export default function Home() {
+    const router = useRouter();
+    const { user, loading } = useAuth();
+    const [menuOpen, setMenuOpen] = useState(false);
+    /**
+     * OPTIONAL: Auto redirect logged-in users
+     * This gives YouTube/Facebook-like behavior
+     */
+    useEffect(() => {
+        if (loading) return;
+        if (user) {
+        router.replace("/dashboard");
+        }
+    }, [user, loading, router]);
+    /**
+     * Prevent UI decision before auth is ready
+     * (avoids incorrect state flashes)
+     */
+    if (loading) {
+        return (
+        <div className="min-h-screen flex items-center justify-center text-gray-600">
+            Loading...
+        </div>
+        );
+    }
 
   return (
     <div className="bg-[#F8FBFA] text-gray-800">
@@ -33,25 +55,31 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <button
-                onClick={() => router.push("/register")}
-                className="px-8 py-4 bg-[#0F3D3E] text-white rounded-xl shadow-lg hover:scale-105 transition"
-              >
-                Get Started
-              </button>
+            <button
+            onClick={() => {
+                if (user) router.push("/dashboard");
+                else router.push("/register");
+            }}
+            className="px-8 py-4 bg-[#0F3D3E] text-white rounded-xl shadow-lg hover:scale-105 transition"
+            >
+            Get Started
+            </button>
 
-              <button
-                onClick={() => router.push("/login")}
-                className="px-8 py-4 border border-gray-300 rounded-xl hover:bg-gray-100 transition"
-              >
-                Login
-              </button>
+            <button
+            onClick={() => {
+                if (user) router.push("/dashboard");
+                else router.push("/login");
+            }}
+            className="px-8 py-4 border border-gray-300 rounded-xl hover:bg-gray-100 transition"
+            >
+            Login
+            </button>
             </div>
           </div>
 
           {/* Dashboard Preview */}
           <div className="relative bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border border-gray-100 max-w-md mx-auto">
-            
+
             {/* Optional Finance Illustration */}
             <div className="absolute top-4 right-4 opacity-20">
               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0F3D3E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

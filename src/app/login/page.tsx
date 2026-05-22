@@ -5,13 +5,22 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+  if (!authLoading && user) {
+    router.push("/dashboard");
+  }
+    }, [user, authLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +35,10 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+  return <div>Loading...</div>;
+}   
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#E2F3F5] to-[#F8FBFA]">

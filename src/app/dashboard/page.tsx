@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/AuthContext";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import {
   PieChart,
@@ -35,14 +36,13 @@ type TransactionType = {
 
 export default function Dashboard() {
   const router = useRouter();
-
+  const { user, loading } = useAuth();
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [balance, setBalance] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -50,11 +50,11 @@ export default function Dashboard() {
   };
 
   const fetchTransactions = async () => {
-    if (!auth.currentUser) return;
+    if (!user) return;
 
     const q = query(
-      collection(db, "users", auth.currentUser.uid, "transactions"),
-      orderBy("createdAt", "desc")
+        collection(db, "users", user.uid, "transactions"),
+        orderBy("createdAt", "desc")
     );
 
     const snapshot = await getDocs(q);
@@ -85,10 +85,10 @@ export default function Dashboard() {
   };
 
   const fetchBudgets = async () => {
-    if (!auth.currentUser) return;
+    if (!user) return;
 
     const snapshot = await getDocs(
-      collection(db, "users", auth.currentUser.uid, "budgets")
+         collection(db, "users", user.uid, "budgets")
     );
 
     const data = snapshot.docs.map((doc) => ({
@@ -98,21 +98,24 @@ export default function Dashboard() {
 
     setBudgets(data);
   };
+useEffect(() => {
+  if (loading) return;
 
-    useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-        fetchTransactions();
-        fetchBudgets();
-        } else {
-        router.push("/login");
-        }
+  if (!user) {
+    router.push("/login");
+    return;
+  }
 
-        setLoading(false);
-    });
+  const loadData = async () => {
+    await fetchTransactions();
+    await fetchBudgets();
+  };
 
-    return () => unsubscribe();
-    }, []);
+  loadData();
+
+}, [user, loading, router]);
+    if (loading) return <div>Loading dashboard...</div>;
+    if (!user) return null;
 
   const expenseByCategory = Object.values(
     transactions
@@ -139,7 +142,7 @@ export default function Dashboard() {
       expenseMap[category] += t.amount;
     });
 
-    if (loading) return <div>Loading dashboard...</div>;
+
   return (
     <div className="flex min-h-screen bg-[#F4F7F6] relative">
 
